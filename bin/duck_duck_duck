@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+
+// # -*- js   -*-
+
+// # !/usr/bin/env ---
+// # -*- bash -*-
+//
+// # set -u -e -o pipefail
+
+require('../app');
+
+
