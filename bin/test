@@ -5,9 +5,9 @@ set -u -e -o pipefail
 
 MIGRATE_TABLE="_test_schema" node tests/helpers/drop.js
 cd tests/user
-MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck
+MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
 cd ../raven_sword
-MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck
+MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
 cd ../..
 mocha tests/duck_duck_duck.js
 

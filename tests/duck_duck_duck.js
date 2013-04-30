@@ -14,6 +14,7 @@ describe( 'schema table', function () {
     })
     .job(function (j, last) {
       assert.equal(last.length > 0, true);
+      done();
     })
     .run();
   });
@@ -25,6 +26,7 @@ describe( 'schema table', function () {
     })
     .job(function (j, last) {
       assert.deepEqual(_.keys(last[0]), ['name', 'version']);
+      done();
     })
     .run();
   });
