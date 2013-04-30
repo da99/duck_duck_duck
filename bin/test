@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# -*- bash -*-
+#
+set -u -e -o pipefail
+
+MIGRATE_TABLE="_test_schema" node tests/helpers/drop.js
+cd tests/user
+MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck
+cd ../raven_sword
+MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck
+cd ../..
+mocha tests/duck_duck_duck.js
+
+#!/usr/bin/env node
+# -*- js   -*-
+#
+
+

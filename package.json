@@ -14,7 +14,9 @@
     "url": "git://github.com/da99/duck_duck_duck.git"
   },
   "dependencies" : {
-    "underscore": "x.x.x"
+    "underscore": "x.x.x",
+    "da_river": "x.x.x",
+    "topogo" : "x.x.x"
   },
   "keywords": [
     "da99"
