@@ -11,9 +11,14 @@ var MIGRATE_PATTERN = /^\d+\-/;
 var name            = path.basename(process.cwd());
 var migrates        = _.select(fs.readdirSync("migrates"), function (file, i) {
   return file.match(MIGRATE_PATTERN);
-}).sort();
+});
 
 var direction = (process.argv.indexOf('down') > 0) ? 'down' : 'up';
+
+if (direction === 'down')
+  migrates.sort().reverse();
+else
+  migrates.sort();
 
 River.new(null)
 .job(function (j) {
