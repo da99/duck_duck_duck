@@ -1,0 +1,23 @@
+{
+  "name": "duck_duck_duck",
+  "version": "0.0.0",
+  "description": "My personal way to do multi-applet migrations.",
+  "main": "app.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "bin/test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/da99/duck_duck_duck.git"
+  },
+  "keywords": [
+    "da99"
+  ],
+  "author": "da99",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "gitHead": "849c5374d165e9fb10721becc31538c6f610ef59"
+}
