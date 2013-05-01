@@ -10,7 +10,6 @@ var _  = require('underscore')
 var schema_table    = process.env.MIGRATE_TABLE || '_schema';
 var MIGRATE_PATTERN = /^\d+\-/;
 var name            = path.basename(process.cwd());
-var template        = fs.readFileSync(__dirname + '/template.js').toString();
 
 // From: stackoverflow.com/questions/1267283/how-can-i-create-a-zerofilled-value-using-javascript
 function pad_it(n, p, c) {
@@ -28,6 +27,7 @@ function read_migrates() {
 
 if (process.argv.indexOf('create') > 1) {
 
+  var template  = fs.readFileSync(process.env.DUCK_TEMPLATE).toString();
   var file_name = _.last(process.argv);
   exec("mkdir -p migrates", function (err, data) {
     if (err) throw err;
