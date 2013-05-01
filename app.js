@@ -7,7 +7,7 @@ var _  = require('underscore')
 , Topogo = require('topogo').Topogo
 ;
 
-var schema_table    = process.env.MIGRATE_TABLE || '_schema';
+var schema_table    = process.env.SCHEMA_TABLE || '_schema';
 var MIGRATE_PATTERN = /^\d+\-/;
 var name            = path.basename(process.cwd());
 
@@ -102,6 +102,27 @@ if (process.argv.indexOf('create') > 1) {
       var m = require(process.cwd() + '/migrates/' + f);
 
       r.job(function (j) {
+
+        j.drop = function () {
+          var r = River.new(j);
+          _.each(_.toArray(arguments), function (t_name) {
+            r.job(function (j) {
+              Topogo.run("DROP TABLE IF EXISTS \"" + t_name + "\";", [], j);
+            });
+          });
+          r.run();
+        };
+
+        j.create = function () {
+          var r = River.new(j);
+          _.each(_.toArray(arguments), function (sql) {
+            r.job(function (j) {
+              Topogo.run(sql, [], j);
+            });
+          });
+          r.run();
+        };
+
         m.migrate(direction, j);
       });
 

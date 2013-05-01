@@ -21,13 +21,13 @@ function init_last_three {
 }
 
 # ==== reset
-MIGRATE_TABLE="_test_schema" node tests/helpers/drop.js
+SCHEMA_TABLE="_test_schema" node tests/helpers/drop.js
 
 cd tests/user
-MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
+SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck up
 
 cd ../raven_sword
-MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
+SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck up
 
 cd ../praying_mantis
 echo "" > /tmp/duck_down
@@ -35,24 +35,28 @@ rm -f "migrates/008-eight.js"
 rm -f "migrates/010-ten.js"
 cp "migrates/002-two.js"  "migrates/004-four.js"
 cp "migrates/002-two.js"  "migrates/006-six.js"
-MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
+SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck up
 cp "migrates/002-two.js"  "migrates/008-eight.js"
 cp "migrates/002-two.js"  "migrates/010-ten.js"
-MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck down
+SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck down
 
 cd ../lone_wolf
 echo "" > /tmp/duck_up
 init
-MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
+SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck up
 init_last_three
-MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
+SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck up
 
 cd ../laughing_octopus
 rm -rf migrates
-DUCK_TEMPLATE="../../template.js" MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck create one
-DUCK_TEMPLATE="../../template.js" MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck create two
-DUCK_TEMPLATE="../../template.js" MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck create three
+DUCK_TEMPLATE="../../template.js" SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck create one
+DUCK_TEMPLATE="../../template.js" SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck create two
+DUCK_TEMPLATE="../../template.js" SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck create three
 
+# test .drop/.create
+cd ../screaming_mantis
+SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck up
+SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck down
 
 cd ../..
 mocha tests/duck_duck_duck.js
