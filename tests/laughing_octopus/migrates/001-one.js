@@ -13,9 +13,9 @@ m.migrate = function (dir, r) {
 
   } else {
 
-    var sql = 'CREATE TABLE IF NOT EXISTS ' + table + " ( \n" +
-      " \n" +
-    ');';
+    var sql = 'CREATE TABLE IF NOT EXISTS ' + table + " ( \
+\
+    );";
     Topogo.run(sql, [], r);
 
   }
