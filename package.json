@@ -1,6 +1,6 @@
 {
   "name": "duck_duck_duck",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "My personal way to do multi-applet migrations.",
   "main": "app.js",
   "directories": {
@@ -13,10 +13,10 @@
     "type": "git",
     "url": "git://github.com/da99/duck_duck_duck.git"
   },
-  "dependencies" : {
+  "dependencies": {
     "underscore": "x.x.x",
     "da_river": "x.x.x",
-    "topogo" : "x.x.x"
+    "topogo": "x.x.x"
   },
   "keywords": [
     "da99"
