@@ -12,6 +12,7 @@ var MIGRATE_PATTERN = /^\d+\-/;
 var name            = path.basename(process.cwd());
 var template        = "\
 var Topogo = require(\"topogo\").Topogo;\n\
+var River  = require(\"da_river\").River;\n\
 \n\
 var m = module.exports = {};\n\
 \n\
