@@ -73,12 +73,27 @@ describe( 'Migrate down:', function () {
   });
 
   it( 'runs migrates in reverse order', function () {
-    assert.equal(contents, "+1+2+3-3-2-1");
+    assert.equal(contents, "+2+4+6-6-4-2");
   });
 
-  it( 'does not run down migrates from earlier version', function () {
+  it( 'does not run down migrates from later versions', function () {
     // This tests is the same as "runs migrates in reverse order"
-    assert.equal(contents, "+1+2+3-3-2-1");
+    assert.equal(contents, "+2+4+6-6-4-2");
+  });
+
+  does( 'update version to one less than earlier version', function (done) {
+    River.new(null)
+    .job(function (j) {
+      Topogo.run('SELECT * FROM _test_schema', [], j);
+    })
+    .job(function (j, last) {
+      var pm = _.find(last, function (rec) {
+        return rec.name === 'praying_mantis';
+      });
+      assert.equal(pm.version, 0);
+      done();
+    })
+    .run();
   });
 
 }); // === end desc

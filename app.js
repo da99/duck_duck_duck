@@ -45,6 +45,9 @@ if (process.argv.indexOf('create') > 1) {
 
 } else {
   var migrates  = read_migrates();
+  var versions  = _.map(migrates, function (f) {
+    return parseInt(f, 10);
+  });
   var direction = (process.argv.indexOf('down') > 0) ? 'down' : 'up';
 
 
@@ -81,13 +84,13 @@ if (process.argv.indexOf('create') > 1) {
     }
   })
   .job(function (j, last_max) {
-    var max = 0;
     var r = River.new(null);
     var has_migrates = false;
 
     _.each(migrates, function (f) {
+      var max = parseInt(f, 10);
+
       // Should it run?
-      max = parseInt(f, 10);
       if (direction === 'up' && last_max >= max)
         return;
       if (direction === 'down' && last_max < max)
@@ -104,6 +107,11 @@ if (process.argv.indexOf('create') > 1) {
 
       r.job(function (j) {
         var t = Topogo.new(schema_table);
+        if (direction === 'down') {
+          max = _.find(versions.slice().reverse(), function (n) {
+            return n < max;
+          }) || 0;
+        }
         t.update({name: name}, {version: max}, j);
       });
 
