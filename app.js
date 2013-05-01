@@ -35,7 +35,7 @@ River.new(null)
 })
 .job(function (j, last) {
   if (last)
-    j.finish(last);
+    j.finish(last.version);
   else {
     River.new(null)
     .job(function (j_create) {
@@ -53,12 +53,11 @@ River.new(null)
   var has_migrates = false;
 
   _.each(migrates, function (f) {
-
     // Should it run?
     max = parseInt(f, 10);
     if (direction === 'up' && last_max >= max)
       return;
-    if (direction === 'down' && last_max <= max)
+    if (direction === 'down' && last_max < max)
       return;
 
     has_migrates = true;

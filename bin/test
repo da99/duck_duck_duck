@@ -14,6 +14,9 @@ MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
 
 cd ../praying_mantis
 echo "" > /tmp/duck_duck_duck
+rm -f "migrates/004-four.js"
+rm -f "migrates/005-five.js"
+rm -f "migrates/006-six.js"
 MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
 cp "migrates/001-one.js"  "migrates/004-four.js"
 cp "migrates/001-one.js"  "migrates/005-five.js"

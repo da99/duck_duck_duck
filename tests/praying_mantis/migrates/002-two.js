@@ -3,7 +3,7 @@ var path = require('path');
 var num = parseInt(path.basename(__filename));
 
 exports.migrate = function (dir, river) {
-  var sign = (dir === 'up') ? '+' : ':';
+  var sign = (dir === 'up') ? '+' : '-';
   var txt = sign + num;
   fs.appendFile('/tmp/duck_duck_duck', txt, function (err) {
     if (err) throw err;
