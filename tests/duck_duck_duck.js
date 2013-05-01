@@ -57,6 +57,11 @@ describe( 'Migrate up:', function () {
     .run();
   });
 
+  it( 'migrates files higher, but not equal, of current version', function () {
+    var contents = fs.readFileSync('/tmp/duck_up').toString().trim();
+    assert.equal(contents, "+1+2+3+4+5+6");
+  });
+
 }); // === end desc
 
 describe( 'Migrate down:', function () {

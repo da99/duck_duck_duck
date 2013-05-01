@@ -3,6 +3,23 @@
 #
 set -u -e -o pipefail
 
+function init {
+  rm -f "migrates/002-two.js"
+  rm -f "migrates/003-three.js"
+  rm -f "migrates/004-four.js"
+  rm -f "migrates/005-five.js"
+  rm -f "migrates/006-six.js"
+
+  cp "migrates/001-one.js"  "migrates/002-two.js"
+  cp "migrates/001-one.js"  "migrates/003-three.js"
+}
+
+function init_last_three {
+  cp "migrates/001-one.js"  "migrates/004-four.js"
+  cp "migrates/001-one.js"  "migrates/005-five.js"
+  cp "migrates/001-one.js"  "migrates/006-six.js"
+}
+
 # ==== reset
 MIGRATE_TABLE="_test_schema" node tests/helpers/drop.js
 
@@ -14,14 +31,17 @@ MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
 
 cd ../praying_mantis
 echo "" > /tmp/duck_down
-rm -f "migrates/004-four.js"
-rm -f "migrates/005-five.js"
-rm -f "migrates/006-six.js"
+init
 MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
-cp "migrates/001-one.js"  "migrates/004-four.js"
-cp "migrates/001-one.js"  "migrates/005-five.js"
-cp "migrates/001-one.js"  "migrates/006-six.js"
+init_last_three
 MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck down
+
+cd ../lone_wolf
+echo "" > /tmp/duck_up
+init
+MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
+init_last_three
+MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
 
 cd ../..
 mocha tests/duck_duck_duck.js
