@@ -10,6 +10,28 @@ var _  = require('underscore')
 var schema_table    = process.env.MIGRATE_TABLE || '_schema';
 var MIGRATE_PATTERN = /^\d+\-/;
 var name            = path.basename(process.cwd());
+var template        = "\
+var Topogo = require(\"topogo\").Topogo; \
+                                         \
+var m = module.exports = {};             \
+                                         \
+m.migrate = function (dir, r) {          \
+                                         \
+  if (dir === 'down') {                  \
+                                         \
+    var sql = '';                        \
+    Topogo.run(sql, [], r);              \
+                                         \
+  } else {                               \
+                                         \
+    var sql = '';                        \
+    Topogo.run(sql, [], r);              \
+                                         \
+  }                                      \
+                                         \
+                                         \
+};                                       \
+";
 
 // From: stackoverflow.com/questions/1267283/how-can-i-create-a-zerofilled-value-using-javascript
 function pad_it(n, p, c) {
@@ -38,7 +60,7 @@ if (process.argv.indexOf('create') > 1) {
     var final_file_name = pad_it(max + 1, 3) + "-" + file_name + '.js';
 
     process.chdir('migrates')
-    fs.writeFile(final_file_name, 'var Topogo = require("topogo").Topogo;', function () {
+    fs.writeFile(final_file_name, template, function () {
     });
   });
 
