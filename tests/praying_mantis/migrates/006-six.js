@@ -5,7 +5,7 @@ var num = parseInt(path.basename(__filename));
 exports.migrate = function (dir, river) {
   var sign = (dir === 'up') ? '+' : '-';
   var txt = sign + num;
-  fs.appendFile('/tmp/duck_duck_duck', txt, function (err) {
+  fs.appendFile('/tmp/duck_down', txt, function (err) {
     if (err) throw err;
     river.finish(txt);
   });

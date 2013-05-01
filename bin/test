@@ -13,7 +13,7 @@ cd ../raven_sword
 MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
 
 cd ../praying_mantis
-echo "" > /tmp/duck_duck_duck
+echo "" > /tmp/duck_down
 rm -f "migrates/004-four.js"
 rm -f "migrates/005-five.js"
 rm -f "migrates/006-six.js"

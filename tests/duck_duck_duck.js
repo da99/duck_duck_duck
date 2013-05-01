@@ -6,6 +6,11 @@ var _    = require('underscore')
 , fs     = require('fs')
 ;
 
+var does = function (name, func) {
+  if (func.length !== 1)
+    throw new Error('Test func requires done: ' + name);
+  return it(name, func);
+};
 
 describe( 'Before first migrate:', function () {
 
@@ -37,7 +42,7 @@ describe( 'Before first migrate:', function () {
 
 describe( 'Migrate up:', function () {
 
-  it( 'updates version to latest migrate', function (done) {
+  does( 'updates version to latest migrate', function (done) {
     River.new()
 
     .job(function (j) {
@@ -59,7 +64,7 @@ describe( 'Migrate down:', function () {
   var contents = null;
 
   before(function () {
-    contents = fs.readFileSync('/tmp/duck_duck_duck').toString().trim();
+    contents = fs.readFileSync('/tmp/duck_down').toString().trim();
   });
 
   it( 'runs migrates in reverse order', function () {
