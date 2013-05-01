@@ -1,6 +1,6 @@
 {
   "name": "duck_duck_duck",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "My personal way to do multi-applet migrations.",
   "main": "app.js",
   "directories": {
