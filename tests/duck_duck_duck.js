@@ -82,3 +82,24 @@ describe( 'Migrate down:', function () {
   });
 
 }); // === end desc
+
+
+describe( 'create ...', function () {
+
+  it( 'create a file', function () {
+    var contents = fs.readFileSync("tests/laughing_octopus/migrates/001-one.js").toString();
+    assert.equal(contents.indexOf('var ') > -1, true);
+  });
+
+  it( 'creates file in successive order', function () {
+    var contents = fs.readFileSync("tests/laughing_octopus/migrates/002-two.js").toString();
+    assert.equal(contents.indexOf('var ') > -1, true);
+    var contents = fs.readFileSync("tests/laughing_octopus/migrates/003-three.js").toString();
+    assert.equal(contents.indexOf('var ') > -1, true);
+  });
+
+}); // === end desc
+
+
+
+

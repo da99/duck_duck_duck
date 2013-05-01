@@ -43,6 +43,13 @@ MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
 init_last_three
 MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck up
 
+cd ../laughing_octopus
+rm -rf migrates
+MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck create one
+MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck create two
+MIGRATE_TABLE="_test_schema" ../../bin/duck_duck_duck create three
+
+
 cd ../..
 mocha tests/duck_duck_duck.js
 
