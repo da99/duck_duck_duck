@@ -1,20 +1,22 @@
+
 var Topogo = require("topogo").Topogo;
 var River  = require("da_river").River;
 
-var m = module.exports = {};
+var table = "";
+var m     = module.exports = {};
 
 m.migrate = function (dir, r) {
 
   if (dir === 'down') {
 
-    var sql = '';
-    Topogo.run(sql, [], r);
+    Topogo.run('DROP TABLE IF EXISTS ' + table +  ';', [], r);
 
   } else {
 
-    var sql = '';
+    var sql = 'CREATE TABLE IF NOT EXISTS ' + table + " ( \n" +
+      " \n" +
+    ');';
     Topogo.run(sql, [], r);
 
   }
-
 };
