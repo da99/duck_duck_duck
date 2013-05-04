@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "underscore": "x.x.x",
+    "optimist"  : "x.x.x",
     "da_river": "x.x.x",
     "topogo": "x.x.x"
   },

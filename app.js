@@ -1,10 +1,11 @@
 
-var _  = require('underscore')
-, path = require('path')
-, fs = require('fs')
-, exec = require('child_process').exec
-, River = require('da_river').River
+var _    = require('underscore')
+, path   = require('path')
+, fs     = require('fs')
+, exec   = require('child_process').exec
+, River  = require('da_river').River
 , Topogo = require('topogo').Topogo
+, argv   = require('optimist').argv
 ;
 
 var schema_table    = process.env.SCHEMA_TABLE || '_schema';
@@ -25,7 +26,7 @@ function read_migrates() {
   }) : []
 }
 
-if (process.argv.indexOf('create') > 1) {
+if (argv._[0] === 'create') {
 
   var template  = fs.readFileSync(process.env.DUCK_TEMPLATE).toString();
   var file_name = _.last(process.argv);
@@ -43,12 +44,13 @@ if (process.argv.indexOf('create') > 1) {
     });
   });
 
-} else {
+} else if (argv._[0] === 'drop_it') {
+} else if (_.contains(['up','down'], argv._[0])) {
   var migrates  = read_migrates();
   var versions  = _.map(migrates, function (f) {
     return parseInt(f, 10);
   });
-  var direction = (process.argv.indexOf('down') > 0) ? 'down' : 'up';
+  var direction = (argv._[0] === 'down') ? 'down' : 'up';
 
 
   if (direction === 'down')
@@ -152,6 +154,8 @@ if (process.argv.indexOf('create') > 1) {
   });
 
 
+} else {
+  throw new Error("Unknown argument: " + JSON.stringify(argv._));
 }
 
 
