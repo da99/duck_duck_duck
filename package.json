@@ -1,6 +1,6 @@
 {
   "name": "duck_duck_duck",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "My personal way to do multi-applet migrations.",
   "main": "app.js",
   "directories": {
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "underscore": "x.x.x",
-    "optimist"  : "x.x.x",
+    "optimist": "x.x.x",
     "da_river": "x.x.x",
     "topogo": "x.x.x"
   },
