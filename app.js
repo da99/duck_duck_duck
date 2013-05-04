@@ -106,11 +106,13 @@ if (argv._[0] === 'create') {
 
       r.job(function (j) {
 
+        var PG = j.PG = Topogo;
+
         j.drop = function () {
           var r = River.new(j);
           _.each(_.toArray(arguments), function (t_name) {
             r.job(function (j) {
-              Topogo.run("DROP TABLE IF EXISTS \"" + t_name + "\";", [], j);
+              PG.run("DROP TABLE IF EXISTS \"" + t_name + "\";", [], j);
             });
           });
           r.run();
@@ -120,7 +122,7 @@ if (argv._[0] === 'create') {
           var r = River.new(j);
           _.each(_.toArray(arguments), function (sql) {
             r.job(function (j) {
-              Topogo.run(sql, [], j);
+              PG.run(sql, [], j);
             });
           });
           r.run();
