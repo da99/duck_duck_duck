@@ -44,13 +44,14 @@ if (argv._[0] === 'create') {
     });
   });
 
-} else if (argv._[0] === 'drop_it') {
-} else if (_.contains(['up','down'], argv._[0])) {
+} else if (_.contains(['up','down', 'drop_it'], argv._[0])) {
   var migrates  = read_migrates();
   var versions  = _.map(migrates, function (f) {
     return parseInt(f, 10);
   });
-  var direction = (argv._[0] === 'down') ? 'down' : 'up';
+
+  var orig_dir  = argv._[0];
+  var direction = (_.contains(['down', 'drop_it'], argv._[0])) ? 'down' : 'up';
 
 
   if (direction === 'down')
@@ -149,7 +150,12 @@ if (argv._[0] === 'create') {
     }
 
   })
-  .run(function () {
+  .job(function (j, last) {
+    if (orig_dir !== 'drop_it')
+      return j.finish(last);
+    Topogo.run("DELETE FROM \"" + schema_table + "\" WHERE name = $1;", [name], j);
+  })
+  .run(function (r, last) {
     Topogo.close();
   });
 

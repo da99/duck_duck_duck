@@ -3,6 +3,11 @@
 #
 set -u -e -o pipefail
 
+rm -f /tmp/duck_*
+touch /tmp/duck_up
+touch /tmp/duck_down
+touch /tmp/duck_drop_it
+
 function init {
   rm -f "migrates/002-two.js"
   rm -f "migrates/003-three.js"
@@ -30,7 +35,6 @@ cd ../raven_sword
 SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck up
 
 cd ../praying_mantis
-echo "" > /tmp/duck_down
 rm -f "migrates/008-eight.js"
 rm -f "migrates/010-ten.js"
 cp "migrates/002-two.js"  "migrates/004-four.js"
@@ -41,7 +45,6 @@ cp "migrates/002-two.js"  "migrates/010-ten.js"
 SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck down
 
 cd ../lone_wolf
-echo "" > /tmp/duck_up
 init
 SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck up
 init_last_three
@@ -57,6 +60,10 @@ DUCK_TEMPLATE="../../template.js" SCHEMA_TABLE="_test_schema" ../../bin/duck_duc
 cd ../screaming_mantis
 SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck up
 SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck down
+
+cd ../liquid
+SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck up
+SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck drop_it
 
 cd ../..
 mocha tests/duck_duck_duck.js

@@ -12,6 +12,23 @@ var does = function (name, func) {
   return it(name, func);
 };
 
+var applets_list = {};
+function applets(func) {
+  if (applets_list.length)
+    return func(applets_list);
+
+  River.new()
+  .job(function (j) {
+    Topogo.run('SELECT * FROM _test_schema', [], j);
+  })
+  .run(function (r, recs) {
+    _.each(recs, function (r, i) {
+      applets_list[r.name] = r.version;
+    });
+    func(applets_list);
+  });
+}
+
 describe( 'Before first migrate:', function () {
 
   it( 'creates schema table', function (done) {
@@ -115,6 +132,23 @@ describe( 'create ...', function () {
 
 }); // === end desc
 
+
+
+describe( 'drop_it', function () {
+
+  it( 'migrates down', function () {
+    var contents = fs.readFileSync("/tmp/duck_drop_it").toString();
+    assert.deepEqual(contents, "drop_it");
+  });
+
+  does( 'removes entry from schema', function (done) {
+    applets(function (list) {
+      assert.deepEqual(list.liquid, undefined);
+      done();
+    });
+  });
+
+}); // === end desc
 
 
 
