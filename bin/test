@@ -66,6 +66,7 @@ SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck up
 SCHEMA_TABLE="_test_schema" ../../bin/duck_duck_duck drop_it
 
 cd ../..
+SCHEMA_TABLE="_test_schema" bin/duck_duck_duck list > /tmp/duck_list
 mocha tests/duck_duck_duck.js
 
 #!/usr/bin/env node

@@ -151,4 +151,11 @@ describe( 'drop_it', function () {
 }); // === end desc
 
 
+describe( 'list', function () {
 
+  it( 'outputs schema table on each line: VER_NUM NAME', function () {
+    var contents = fs.readFileSync("/tmp/duck_list").toString().split("\n");
+    assert.deepEqual(!!contents[0].match(/\d user/), true);
+    assert.deepEqual(!!contents[1].match(/\d raven_sword/), true);
+  });
+}); // === end desc

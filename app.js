@@ -26,7 +26,26 @@ function read_migrates() {
   }) : []
 }
 
-if (argv._[0] === 'create') {
+if (argv._[0] === 'list') {
+
+  River.new(null)
+  .job(function (j) {
+    Topogo.run('SELECT * FROM ' + schema_table + ' ;', [], j);
+  })
+  .job(function (j, list) {
+    _.each(list, function (o) {
+      var v = o.version;
+      if (o.version < 10)
+        v = ' ' + v;
+      console.log(v, o.name);
+    });
+    j.finish(list);
+  })
+  .run(function () {
+    Topogo.close();
+  });
+
+} else if (argv._[0] === 'create') {
 
   var template  = fs.readFileSync(process.env.DUCK_TEMPLATE).toString();
   var file_name = _.last(process.argv);
