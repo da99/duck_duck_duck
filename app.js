@@ -128,14 +128,18 @@ if (argv._[0] === 'list') {
         var PG = j.PG = Topogo;
 
         j.drop = function () {
-          var r = River.new(j);
-          _.each(_.toArray(arguments), function (t_name) {
+          var table_name = arguments[0];
+          var name       = function (str) { return str.replace(new RegExp('@_t', 'ig'), '"' + table_name + '"'); };
+          var r          = River.new(j);
+
+          _.each(_.toArray(arguments).reverse(), function (t_name) {
             r.job(function (j) {
-              PG.run("DROP TABLE IF EXISTS \"" + t_name + "\";", [], j);
+              PG.run("DROP TABLE IF EXISTS \"" + t_name + "\" ;", [], j);
             });
           });
+
           r.run();
-        };
+        }; // ================= .drop
 
         j.create = function () {
           var r = River.new(j);
