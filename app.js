@@ -161,7 +161,7 @@ if (argv._[0] === 'list') {
             return n < max;
           }) || 0;
         }
-        t.update({name: name}, {version: max}, j);
+        t.update_where_set({name: name}, {version: max}, j);
       });
 
     });
