@@ -14,11 +14,17 @@ def erase_tables
 end
 
 erase_tables
-at_exit { erase_tables }
+# at_exit { erase_tables }
 
 # === Helpers ================================================================
 def get *args
   DB[*args].all
+end
+
+def versions mod
+  Dir.glob("#{mod}/migrates/*").map { |file|
+    file[/\/(\d{4})[^\/]+\.sql$/] && $1.to_i
+  }.sort
 end
 
 # === Specs ==================================================================
@@ -36,8 +42,10 @@ describe "create" do
     Dir.chdir(@dir) {
       `duck_duck_duck create MOD table_1`
       `duck_duck_duck create MOD table_2`
+
       `touch MOD/migrates/0022-skip_zero.sql`
       `duck_duck_duck create MOD table_3`
+
       `touch MOD/migrates/0091-skip_zero.sql`
       `duck_duck_duck create MOD table_100`
 
@@ -50,31 +58,17 @@ describe "create" do
 
 end # === describe create
 
+describe 'Migrate up:' do
+
+  it( 'updates version to latest migrate' ) do
+    `duck_duck_duck up 0010_model`
+    get('SELECT * FROM _test_schema').
+      first[:version].should == versions('0010_model').last
+  end
+
+end # === end desc
+
 __END__
-describe( 'Migrate up:', function () {
-
-  does( 'updates version to latest migrate', function (done) {
-    River.new()
-
-    .job(function (j) {
-      Topogo.run('SELECT * FROM _test_schema', [], j);
-    })
-
-    .job(function (j, last) {
-      assert(last[0].version, 3);
-      done();
-    })
-
-    .run();
-  });
-
-  it( 'migrates files higher, but not equal, of current version', function () {
-    var contents = fs.readFileSync('/tmp/duck_up').toString().trim();
-    assert.equal(contents, "+1+2+3+4+5+6");
-  });
-
-}); // === end desc
-
 describe( 'Migrate down:', function () {
 
   var contents = null;

@@ -6,7 +6,7 @@ set -u -e -o pipefail
 cd specs/lib/models
 
 echo "pwd: $(pwd)"
-bundle exec bacon ../helpers.rb ../../duck_duck_duck.rb
+bundle exec bacon ../helpers.rb ../../duck_duck_duck.rb "$@"
 
 
 
