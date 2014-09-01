@@ -1,4 +1,14 @@
 
+require 'sequel'
+ENV['SCHEMA_TABLE'] = '_test_schema'
+DB = Sequel.connect ENV['DATABASE_URL']
+
+def get *args
+  DB[*args].all
+end
+
+MODELS = Dir.glob('specs/libs/models/*').
+  map { |file| File.basename file }
 
 describe 'Before first migrate:' do
 
