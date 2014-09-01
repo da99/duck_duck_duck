@@ -7,19 +7,21 @@ when 'help'
   puts "========================"
   puts ""
   puts "help"
+  puts "create Model table"
+  puts "create Model default_data create"
   puts "up"
   puts "down"
   puts "migrate_schema"
   puts ""
   puts "=== ENV/options: ==="
   puts ""
-  puts "DUCK_DUCK_DUCK_schema=_schema_"
+  puts "SCHEMA_TABLE=_schema_"
   puts ""
   puts "========================"
 
 else
   require 'duck_duck_duck'
-  cmds = %w{ up down migrate_schema }
+  cmds = %w{ create up down migrate_schema }
   fail "Unknown cmd: #{ARGV[0]}" unless cmds.include?(ARGV[0])
   Duck_Duck_Duck.send(ARGV)
 

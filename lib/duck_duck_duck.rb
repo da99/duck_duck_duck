@@ -25,7 +25,7 @@ class Duck_Duck_Duck
         ver_str = "#{ver}"
       end
 
-      sub_str=[name, action, action_sub].compact
+      sub_str=[name, action, sub_action].compact
       if sub_str.size > 2
         sub_str.shift
       end
@@ -35,7 +35,7 @@ class Duck_Duck_Duck
         f.puts "\n\n\n\n-- DOWN\n\n\n\n"
       end
 
-      exec "gvim #{new_file}"
+      puts new_file
     end # === def create
 
     def up
