@@ -63,7 +63,7 @@ class Duck_Duck_Duck
       str.split('/').pop.split('-').first.to_i
     end
 
-    @files = Dir.glob("Server/#{name}/migrates/*.sql")
+    @files = Dir.glob("#{name}/migrates/*.sql")
   end # === def migrate_schema
 
   def up
@@ -146,9 +146,9 @@ class Duck_Duck_Duck
   end # === def down
 
   def create
-    `mkdir -p Server/#{name}/migrates`
+    `mkdir -p #{name}/migrates`
 
-    files = Dir.glob("Server/#{name}/migrates/*.sql").sort
+    files = Dir.glob("#{name}/migrates/*.sql").sort
 
     if files.empty?
       ver=1
@@ -171,7 +171,7 @@ class Duck_Duck_Duck
       sub_str.shift
     end
 
-    new_file = "Server/#{name}/migrates/#{ver_str}-#{sub_str.join('-')}.sql"
+    new_file = "#{name}/migrates/#{ver_str}-#{sub_str.join('-')}.sql"
     File.open(new_file, 'a') do |f|
       f.puts "\n\n\n\n-- DOWN\n\n\n\n"
     end
