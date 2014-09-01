@@ -166,10 +166,7 @@ class Duck_Duck_Duck
       ver_str = "#{ver}"
     end
 
-    sub_str=[name, action, sub_action].compact
-    if sub_str.size > 2
-      sub_str.shift
-    end
+    sub_str=[action, sub_action].compact
 
     new_file = "#{name}/migrates/#{ver_str}-#{sub_str.join('-')}.sql"
     File.open(new_file, 'a') do |f|
