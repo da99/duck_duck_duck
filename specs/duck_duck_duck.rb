@@ -3,12 +3,25 @@ require 'sequel'
 ENV['SCHEMA_TABLE'] = '_test_schema'
 DB = Sequel.connect ENV['DATABASE_URL']
 
+# === Reset tables ===========================================================
+def erase_tables
+  models = Dir.glob('*/migrates').map { |dir|  File.basename File.dirname(dir) }
+  tables = models.dup
+  tables << ENV['SCHEMA_TABLE']
+  tables.each { |t|
+    DB << "DROP TABLE IF EXISTS #{t};"
+  }
+end
+
+erase_tables
+at_exit { erase_tables }
+
+# === Helpers ================================================================
 def get *args
   DB[*args].all
 end
 
-MODELS = Dir.glob('specs/libs/models/*').
-  map { |file| File.basename file }
+# === Specs ==================================================================
 
 describe 'Before first migrate:' do
 
