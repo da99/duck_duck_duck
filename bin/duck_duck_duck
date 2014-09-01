@@ -1,12 +1,30 @@
-#!/usr/bin/env node
+#!/usr/bin/env ruby
+#
 
-// # -*- js   -*-
 
-// # !/usr/bin/env ---
-// # -*- bash -*-
-//
-// # set -u -e -o pipefail
+require 'duck_duck_duck'
 
-require('../app');
+case ARGV[0]
+
+when 'create'
+  name = ARGV[1]
+  if !name
+    puts "No name."
+    exit 1
+  end
+
+  action = ARGV[2]
+  if !action
+    puts "No action."
+    exit 1
+  end
+
+  sub_action = ARGV[3]
+
+  Duck_Duck_Duck.create name, action, sub_action
+else
+  fail "Unknown cmd: #{ARGV[0]}"
+end
+
 
 

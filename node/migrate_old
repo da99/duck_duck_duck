@@ -1,0 +1,205 @@
+#!/usr/bin/env node
+
+var _ = require('underscore')
+;
+
+// Create databases: okdoki
+
+var River  = require('da_river').River
+, Topogo   = require('topogo').Topogo
+, Customer = require('../Server/Customer/model').Customer
+, Chat_Bot = require('../Server/Chat/Chat_Bot').Chat_Bot
+, h        = require('../test/helpers')
+;
+
+var _      = require('underscore');
+
+var cmd         = (process.argv[2] || 'nothing')
+, is_reset_user = cmd === 'reset_with_data'
+, is_reset      = cmd === 'reset' || is_reset_user
+, is_up         = is_reset || cmd === 'up'
+, is_down       = is_reset || cmd === 'down'
+;
+
+if (!is_up && !is_down) {
+  console.log('Unknown cmd: ' + process.argv[2]);
+  process.exit(1);
+}
+
+var ok = {
+  list : [],
+  q: function (string) {
+    this.list.push(string
+                   .replace(/\$id_size/g, Topogo.id_size)
+                   .replace(/\$trashed_at/, " trashed_at  bigint  default null ")
+                  );
+    return this;
+  }
+};
+
+function down(names, flow) {
+  var public = [];
+  var r = River.new(arguments);
+
+  if (!is_down)
+    return flow.finish(public);
+
+  _.each(names, function (n, i) {
+    if (n.indexOf('public.') === 0 ) {
+      public.push(n);
+      r.job('drop', n, function (j) {
+        Topogo.new(n).drop(j);
+      });
+    };
+  });
+
+  r.job('public tables', function (j, last) {
+    return j.finish(public);
+  });
+
+  r.run();
+}
+
+function up(flow) {
+  if (!is_up)
+    return flow.finish();
+
+  // ok.q("CREATE EXTENSION IF NOT EXISTS pgcrypto");
+
+  // ok.q(" \
+       // CREATE OR REPLACE FUNCTION public.json_get_varchar_array(j text, k text) \
+       // RETURNS varchar[] \
+       // AS $$    \
+       // import json; \
+       // d = json.loads(j or '{}'); \
+       // return d[k] if k in d else []; \
+       // $$ LANGUAGE plpython3u; \
+  // ");
+
+  // ok.q(" \
+       // CREATE OR REPLACE FUNCTION public.json_get_text_array(j text, k text) \
+       // RETURNS text[] \
+       // AS $$    \
+       // import json; \
+       // d = json.loads(j or '{}')[k]; \
+       // return  d[k] if k in d else []; \
+       // $$ LANGUAGE plpython3u; \
+  // ");
+
+   // ok.q(" \
+        // CREATE OR REPLACE FUNCTION public.json_get(j text, k text) \
+        // RETURNS text \
+        // AS $$    \
+        // import json; \
+        // d = json.loads(j or '{}')[k]; \
+        // return  d[k] if k in d else \"\"; \
+        // $$ LANGUAGE plpython3u; \
+  // ");
+
+     // ok.q(" \
+          // CREATE OR REPLACE FUNCTION public.json_merge(o text, n text) \
+          // RETURNS text \
+          // AS $$    \
+          // import json; \
+          // oj = json.loads(o or \"{}\");   \
+          // nj = json.loads(n or \"{}\");   \
+          // f  = dict(list(oj.items()) + list(nj.items())); \
+          // return json.dumps(f);         \
+          // $$ LANGUAGE plpython3u; \
+ // ");
+
+// ok.q(" \
+// CREATE OR REPLACE FUNCTION encode_pass_phrase(varchar) \
+// RETURNS varchar \
+// AS $$ \
+// SELECT encode(digest($1, 'sha512'), 'hex') \
+// $$ LANGUAGE SQL STRICT IMMUTABLE; \
+// ");
+
+
+} // end func up
+
+function create(flow) {
+  console.log('Finished migrating the main db.');
+  if (!is_reset_user) {
+    return flow.finish();
+  }
+
+  var p     = "pass phrase";
+  var report = function (j) {
+    console.log('Finished ' + j.group + ' ' + j.id);
+  };
+
+  var c_opts = {pass_phrase: p, confirm_pass_phrase: p, ip: '000.000.00'};
+
+  var r = River.new(arguments);
+  r.for_each_finish(report);
+  r.job('create:', 'go99', function (j) {
+    Customer.create(_.extend({screen_name: j.id}, c_opts), (j));
+  });
+
+  r.job('create:', 'dos', function (j) {
+    Customer.create(_.extend({screen_name: j.id}, c_opts), (j));
+  });
+
+  r.job('create bot:', '404', function (j) {
+    var c = j.river.reply_for('create:', 'go99');
+    Chat_Bot.create({owner_id: c.data.id, url: "https://okdoki-bot.herokuapp.com/test/404/404", name: j.id}, (j));
+  });
+
+  r.job('create bot:', 'ok', function (j) {
+    var c = j.river.reply_for('create:', 'go99');
+    Chat_Bot.create({owner_id: c.data.id, url: "https://okdoki-bot.herokuapp.com/test/ok", name: j.id}, (j));
+  });
+
+  r.job('create bot:', 'im', function (j) {
+    var c = j.river.reply_for('create:', 'dos');
+    Chat_Bot.create({owner_id: c.data.id, url: "https://okdoki-bot.herokuapp.com/test/im", name: j.id}, (j));
+  });
+
+  r.job('create bot:', 'not_json', function (j) {
+    var c = j.river.reply_for('create:', 'dos');
+    Chat_Bot.create({owner_id: c.data.id, url: "https://okdoki-bot.herokuapp.com/test/not_json", name: j.id}, (j));
+  });
+
+  r.run();
+
+};
+
+// // ==========================================================================================
+
+// // ==========================================================================================
+
+
+// ****************************************************************
+// ****************** SQL Helpers *********************************
+// ****************************************************************
+
+var trashed_at = " trashed_at bigint default NULL ";
+
+function varchar(o) { return " varchar( " + o + " ) "; }
+var primary_key = " PRIMARY KEY ";
+var serial      = " serial ";
+var not_null    = " NOT NULL ";
+var unique      = " unique ";
+var bigint      = " bigint ";
+var default_null= "default null";
+
+function create_table(name, f) {
+  var vals = [];
+  var sql = function () {
+    vals.push(_.toArray(arguments));
+  };
+
+  f(sql);
+
+  return "CREATE TABLE IF NOT EXISTS " + name + " ( \n" + to_sql(vals) + " \n ); ";
+}
+
+function to_sql(vals) {
+  var lines = _.map(vals, function (row) { return row.join( ' ' ); });
+  return lines.join(", \n");
+}
+
+
+
