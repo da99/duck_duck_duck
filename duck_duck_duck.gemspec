@@ -28,6 +28,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bacon"         , "~> 1.0"
   spec.add_development_dependency "Bacon_Colored" , "~> 0.1"
 
-  spec.add_dependency "sequel"        , "~> 4.13"
-  spec.add_dependency "pg"            , "~> 0.16"
+  spec.add_development_dependency "sequel"        , "~> 4.13"
+  spec.add_development_dependency "pg"            , "~> 0.16"
 end

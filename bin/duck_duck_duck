@@ -4,6 +4,7 @@
 case ARGV[0]
 
 when 'help'
+
   puts "========================"
   puts ""
   puts "help"
@@ -16,15 +17,17 @@ when 'help'
   puts "=== ENV/options: ==="
   puts ""
   puts "SCHEMA_TABLE=_schema_"
+  puts "DATABASE_URL='postgres://...@...:../..'"
   puts ""
   puts "========================"
 
 else
+
   require 'duck_duck_duck'
   fail "Unknown cmd: #{ARGV[0]}" unless %w{ reset create up down }.include?(ARGV[0])
   Duck_Duck_Duck.send(*ARGV)
 
-end
+end # === case ARGV[0]
 
 
 

@@ -9,7 +9,7 @@ def erase_tables
   tables = models.dup
   tables << ENV['SCHEMA_TABLE']
   tables.each { |t|
-    DB << "DROP TABLE IF EXISTS #{t};"
+    DB << "DROP TABLE IF EXISTS #{t.inspect};"
   }
 end
 
@@ -23,19 +23,29 @@ end
 
 # === Specs ==================================================================
 
-describe 'Before first migrate:' do
+describe "create" do
 
-  it 'creates schema table' do
-    get('SELECT * FROM _test_schema').
-    size.should > 0
+  before {
+    tmp_dir = '/tmp/ddd_ver'
+    `rm -fr #{tmp_dir}`
+    `mkdir -p #{tmp_dir}`
+    @dir = tmp_dir
+  }
+
+  it "names the file in successive file versions: 0000-....sql" do
+    Dir.chdir(@dir) {
+      `duck_duck_duck create MOD table_1`
+      `duck_duck_duck create MOD table_2`
+      `touch MOD/migrates/0022-skip_zero.sql`
+      `duck_duck_duck create MOD table_3`
+
+      File.should.exists('MOD/migrates/0010-table_1.sql')
+      File.should.exists('MOD/migrates/0020-table_2.sql')
+      File.should.exists('MOD/migrates/0030-table_3.sql')
+    }
   end
 
-  it 'creates rows with: name, version' do
-    get('SELECT * FROM _test_schema').
-      first.keys.should == %w{ name version }
-  end
-
-end # === describe Before first migrate
+end # === describe create
 
 __END__
 describe( 'Migrate up:', function () {

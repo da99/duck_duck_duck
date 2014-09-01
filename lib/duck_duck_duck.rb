@@ -148,27 +148,15 @@ class Duck_Duck_Duck
   def create
     `mkdir -p #{name}/migrates`
 
-    files = Dir.glob("#{name}/migrates/*.sql").sort
+    files = Dir.glob("#{name}/migrates/*.sql").grep(/\/\d{4}\-/).sort
 
-    if files.empty?
-      ver=1
-    else
-      last=files.last.split('/').last || "/0"
-      ver=last.split('/').last.split('-').first.to_i + 1
-    end
+    next_ver = begin
+                 (files.last || '')[/\/(\d{4})[^\/]+$/]
+                 v = ($1 ? $1 : '0')
+                 '%04d' % (v.to_i + (10 - v[/\d$/].to_i))
+               end
 
-
-    if ver < 10
-      ver_str = "00#{ver}"
-    elsif ver < 100
-      ver_str = "0#{ver}"
-    else
-      ver_str = "#{ver}"
-    end
-
-    sub_str=[action, sub_action].compact
-
-    new_file = "#{name}/migrates/#{ver_str}-#{sub_str.join('-')}.sql"
+    new_file = "#{name}/migrates/#{next_ver}-#{[action, sub_action].compact.join('-')}.sql"
     File.open(new_file, 'a') do |f|
       f.puts "\n\n\n\n-- DOWN\n\n\n\n"
     end
