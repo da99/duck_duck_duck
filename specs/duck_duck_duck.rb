@@ -1,63 +1,20 @@
 
+
+describe 'Before first migrate:' do
+
+  it 'creates schema table' do
+    get('SELECT * FROM _test_schema').
+    size.should > 0
+  end
+
+  it 'creates rows with: name, version' do
+    get('SELECT * FROM _test_schema').
+      first.keys.should == %w{ name version }
+  end
+
+end # === describe Before first migrate
+
 __END__
-var _    = require('underscore')
-, Topogo = require('topogo').Topogo
-, River  = require('da_river').River
-, assert = require('assert')
-, fs     = require('fs')
-;
-
-var does = function (name, func) {
-  if (func.length !== 1)
-    throw new Error('Test func requires done: ' + name);
-  return it(name, func);
-};
-
-var applets_list = {};
-function applets(func) {
-  if (applets_list.length)
-    return func(applets_list);
-
-  River.new()
-  .job(function (j) {
-    Topogo.run('SELECT * FROM _test_schema', [], j);
-  })
-  .run(function (r, recs) {
-    _.each(recs, function (r, i) {
-      applets_list[r.name] = r.version;
-    });
-    func(applets_list);
-  });
-}
-
-describe( 'Before first migrate:', function () {
-
-  it( 'creates schema table', function (done) {
-    River.new(null)
-    .job(function (j) {
-      Topogo.run('SELECT * FROM _test_schema', [], j);
-    })
-    .job(function (j, last) {
-      assert.equal(last.length > 0, true);
-      done();
-    })
-    .run();
-  });
-
-  it( 'creates rows with: name, version', function (done) {
-    River.new(null)
-    .job(function (j) {
-      Topogo.run('SELECT * FROM _test_schema', [], j);
-    })
-    .job(function (j, last) {
-      assert.deepEqual(_.keys(last[0]), ['name', 'version']);
-      done();
-    })
-    .run();
-  });
-
-}); // === end desc
-
 describe( 'Migrate up:', function () {
 
   does( 'updates version to latest migrate', function (done) {
