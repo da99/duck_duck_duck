@@ -1,6 +1,9 @@
 
 require "sequel"
+
 class Duck_Duck_Duck
+
+  SCHEMA_TABLE = ENV['SCHEMA_TABLE'] || '_schema'
 
   class << self
 
@@ -38,21 +41,40 @@ class Duck_Duck_Duck
       puts new_file
     end # === def create
 
-    def up
-      rec = DB.fetch("SELECT version FROM _schema WHERE name = :name",  :name=>NAME).all.first
+    def migrate_schema name
+      DB = Sequel.connect(ENV['DATABASE_URL'])
+
+      DB << <<-EOF
+        CREATE TABLE IF NOT EXISTS #{SCHEMA_TABLE} (
+          name      varchar(255) NOT NULL PRIMARY KEY ,
+          version   smallint     NOT NULL DEFAULT 0
+        )
+      EOF
+
+      def file_to_ver str
+        str.split('/').pop.split('-').first.to_i
+      end
+
+      @files = Dir.glob("Server/#{name}/migrates/*.sql")
+    end # === def migrate_schema
+
+    def up name
+      migrate_schema name
+
+      rec = DB.fetch("SELECT version FROM #{SCHEMA_TABLE} WHERE name = :name",  :name=>name).all.first
 
       if !rec
-        ds = DB["INSERT INTO _schema (name, version) VALUES (?, ?)", NAME, 0]
+        ds = DB["INSERT INTO #{SCHEMA_TABLE} (name, version) VALUES (?, ?)", name, 0]
         ds.insert
         rec = {:version=>0}
       end
 
       if rec[:version] < 0
-        puts "#{NAME} is at invalid version: #{rec[:version]}\n"
+        puts "#{name} has an invalid version: #{rec[:version]}\n"
         exit 1
       end
 
-      files = FILES.sort.map { |f|
+      files = @files.sort.map { |f|
         ver = file_to_ver(f)
         if ver > rec[:version]
           [ ver, File.read(f).split('-- DOWN').first ]
@@ -63,43 +85,22 @@ class Duck_Duck_Duck
         ver = pair.first
         sql = pair[1]
         DB << sql
-        DB[" UPDATE _schema SET version = ? WHERE name = ? ", ver, NAME].update
-        puts "#{NAME} schema is now : #{ver}"
+        DB[" UPDATE #{SCHEMA_TABLE} SET version = ? WHERE name = ? ", ver, name].update
+        puts "#{name} schema is now : #{ver}"
       }
 
       if files.empty?
-        puts "#{NAME} is already the latest: #{rec[:version]}"
+        puts "#{name} is already the latest: #{rec[:version]}"
       end
     end # === def up
 
-    def migrate_schema
-      DB = Sequel.connect(ENV['DATABASE_URL'])
+    def down name
+      migrate_schema name
 
-      DB << %!
-      CREATE TABLE IF NOT EXISTS _schema (
-        name      varchar(255) NOT NULL PRIMARY KEY ,
-        version   smallint     NOT NULL DEFAULT 0
-      )
-      !
-
-      NAME = ARGV[0]
-      if !NAME
-        puts "Name required."
-        exit 1
-      end
-
-      def file_to_ver str
-        str.split('/').pop.split('-').first.to_i
-      end
-
-      FILES = Dir.glob("Server/#{NAME}/migrates/*.sql")
-    end # === def migrate_schema
-
-    def down
-      rec = DB.fetch("SELECT version FROM _schema WHERE name = :name",  :name=>NAME).all.first
+      rec = DB.fetch("SELECT version FROM #{SCHEMA_TABLE} WHERE name = :name",  :name=>NAME).all.first
 
       if !rec
-        ds = DB["INSERT INTO _schema (name, version) VALUES (?, ?)", NAME, 0]
+        ds = DB["INSERT INTO #{SCHEMA_TABLE} (name, version) VALUES (?, ?)", NAME, 0]
         ds.insert
         rec = {:version=>0}
       end
@@ -114,7 +115,7 @@ class Duck_Duck_Duck
         exit 1
       end
 
-      files = FILES.sort.reverse.map { |f|
+      files = @files.sort.reverse.map { |f|
         ver = file_to_ver(f)
 
         if ver <= rec[:version]
@@ -132,7 +133,7 @@ class Duck_Duck_Duck
         ver = pair.first - 1
         sql = pair[1]
         DB << sql
-        DB[" UPDATE _schema SET version = ? WHERE name = ? ", ver, NAME].update
+        DB[" UPDATE #{SCHEMA_TABLE} SET version = ? WHERE name = ? ", ver, NAME].update
         puts "#{NAME} schema is now : #{ver}"
       }
 
