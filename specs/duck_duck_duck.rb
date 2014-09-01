@@ -38,10 +38,13 @@ describe "create" do
       `duck_duck_duck create MOD table_2`
       `touch MOD/migrates/0022-skip_zero.sql`
       `duck_duck_duck create MOD table_3`
+      `touch MOD/migrates/0091-skip_zero.sql`
+      `duck_duck_duck create MOD table_100`
 
       File.should.exists('MOD/migrates/0010-table_1.sql')
       File.should.exists('MOD/migrates/0020-table_2.sql')
       File.should.exists('MOD/migrates/0030-table_3.sql')
+      File.should.exists('MOD/migrates/0100-table_100.sql')
     }
   end
 
