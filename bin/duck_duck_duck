@@ -1,29 +1,28 @@
 #!/usr/bin/env ruby
 #
 
-
-require 'duck_duck_duck'
-
 case ARGV[0]
 
-when 'create'
-  name = ARGV[1]
-  if !name
-    puts "No name."
-    exit 1
-  end
+when 'help'
+  puts "========================"
+  puts ""
+  puts "help"
+  puts "up"
+  puts "down"
+  puts "migrate_schema"
+  puts ""
+  puts "=== ENV/options: ==="
+  puts ""
+  puts "DUCK_DUCK_DUCK_schema=_schema_"
+  puts ""
+  puts "========================"
 
-  action = ARGV[2]
-  if !action
-    puts "No action."
-    exit 1
-  end
-
-  sub_action = ARGV[3]
-
-  Duck_Duck_Duck.create name, action, sub_action
 else
-  fail "Unknown cmd: #{ARGV[0]}"
+  require 'duck_duck_duck'
+  cmds = %w{ up down migrate_schema }
+  fail "Unknown cmd: #{ARGV[0]}" unless cmds.include?(ARGV[0])
+  Duck_Duck_Duck.send(ARGV)
+
 end
 
 
