@@ -30,7 +30,7 @@ class Duck_Duck_Duck
     private # ======================================
 
     def models
-      @models ||= Dir.glob("Server/*/migrates").
+      @models ||= Dir.glob("*/migrates").
         map { |dir| File.basename File.dirname(dir) }
     end
 
