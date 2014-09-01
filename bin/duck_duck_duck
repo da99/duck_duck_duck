@@ -21,9 +21,8 @@ when 'help'
 
 else
   require 'duck_duck_duck'
-  cmds = %w{ create up down migrate_schema }
-  fail "Unknown cmd: #{ARGV[0]}" unless cmds.include?(ARGV[0])
-  Duck_Duck_Duck.send(ARGV)
+  fail "Unknown cmd: #{ARGV[0]}" unless %w{ reset create up down }.include?(ARGV[0])
+  Duck_Duck_Duck.send(*ARGV)
 
 end
 
