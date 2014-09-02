@@ -1,12 +1,11 @@
 
-INSERT INTO "0010_model" (id, title)
-VALUES ('2', 'second title');
+INSERT INTO "0010_model" (title)
+VALUES ('record 30');
 
 
 -- DOWN
 
-DELETE FROM "0010_model"
-  WHERE id = '2';
-
+INSERT INTO "0010_model" (title)
+VALUES ('DROP record 30');
 
 

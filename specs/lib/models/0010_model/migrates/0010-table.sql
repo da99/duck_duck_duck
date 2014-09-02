@@ -1,5 +1,4 @@
 
-
 CREATE TABLE "0010_model" (
   id serial NOT NULL PRIMARY KEY,
   title varchar(100)
@@ -8,6 +7,7 @@ CREATE TABLE "0010_model" (
 
 -- DOWN
 
-DROP TABLE IF EXISTS "0010_model" CASCADE;
+INSERT INTO "0010_model" (title)
+VALUES ('DROP 0010_model');
 
 

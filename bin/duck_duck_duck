@@ -24,7 +24,7 @@ when 'help'
 else
 
   require 'duck_duck_duck'
-  fail "Unknown cmd: #{ARGV[0]}" unless %w{ reset create up down }.include?(ARGV[0])
+  fail "Unknown cmd: #{ARGV[0]}" unless %w{ migrate_schema reset create up down }.include?(ARGV[0])
   Duck_Duck_Duck.send(*ARGV)
 
 end # === case ARGV[0]

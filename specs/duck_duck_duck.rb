@@ -1,24 +1,28 @@
 
 require 'sequel'
-ENV['SCHEMA_TABLE'] = '_test_schema'
+schema = ENV['SCHEMA_TABLE'] = '_test_schema'
 DB = Sequel.connect ENV['DATABASE_URL']
+MODELS = Dir.glob('*/migrates').map { |dir|  File.basename File.dirname(dir) }
 
 # === Reset tables ===========================================================
-def erase_tables
-  models = Dir.glob('*/migrates').map { |dir|  File.basename File.dirname(dir) }
-  tables = models.dup
-  tables << ENV['SCHEMA_TABLE']
+def reset
+  tables = MODELS + [ENV['SCHEMA_TABLE']]
   tables.each { |t|
     DB << "DROP TABLE IF EXISTS #{t.inspect};"
   }
 end
 
-erase_tables
-# at_exit { erase_tables }
+reset
 
 # === Helpers ================================================================
 def get *args
-  DB[*args].all
+  field = args.last.is_a?(Symbol) ? args.pop : nil
+  rows = DB[*args].all
+  if field
+    rows.map { |row| row[field] }
+  else
+    rows
+  end
 end
 
 def versions mod
@@ -60,90 +64,49 @@ end # === describe create
 
 describe 'Migrate up:' do
 
-  it( 'updates version to latest migrate' ) do
+  before { reset }
+
+  it( 'updates version to latest migration' ) do
     `duck_duck_duck up 0010_model`
     get('SELECT * FROM _test_schema').
       first[:version].should == versions('0010_model').last
   end
 
+  it 'does not run migrations from previous versions' do
+    `duck_duck_duck migrate_schema`
+    DB << File.read("0010_model/migrates/0010-table.sql").split('-- DOWN').first
+    DB << "INSERT INTO #{schema.inspect} VALUES ('0010_model', '20');"
+    `duck_duck_duck up 0010_model`
+    get('SELECT * FROM "0010_model"', :title).
+      should == ['record 30', 'record 40', 'record 50']
+  end
+
 end # === end desc
 
-__END__
-describe( 'Migrate down:', function () {
+describe 'Migrate down:' do
 
-  var contents = null;
+  it 'leaves version to 0' do
+    `duck_duck_duck up 0010_model`
+    `duck_duck_duck down 0010_model`
+    get('SELECT * FROM _test_schema WHERE name = "0010_model"', :version).last.
+      should == 0
+  end
 
-  before(function () {
-    contents = fs.readFileSync('/tmp/duck_down').toString().trim();
-  });
+  it 'runs migrates in reverse order' do
+    `duck_duck_duck up 0020_model`
+    `duck_duck_duck down 0020_model`
+    get('SELECT * FROM 0020_model', :title).
+      should == ['a']
+  end
 
-  it( 'runs migrates in reverse order', function () {
-    assert.equal(contents, "+2+4+6-6-4-2");
-  });
+  it 'does not run down migrates from later versions' do
+    `duck_duck_duck migrate_schema`
+    DB << "UPDATE #{schema} SET version = '3' WHERE name = '0020_model';"
+    `duck_duck_duck down 0020_model`
+    get('SELECT * FROM 0020_model', :title).
+      should == ['a']
+  end
 
-  it( 'does not run down migrates from later versions', function () {
-    // This tests is the same as "runs migrates in reverse order"
-    assert.equal(contents, "+2+4+6-6-4-2");
-  });
-
-  does( 'update version to one less than earlier version', function (done) {
-    River.new(null)
-    .job(function (j) {
-      Topogo.run('SELECT * FROM _test_schema', [], j);
-    })
-    .job(function (j, last) {
-      var pm = _.find(last, function (rec) {
-        return rec.name === 'praying_mantis';
-      });
-      assert.equal(pm.version, 0);
-      done();
-    })
-    .run();
-  });
-
-}); // === end desc
+end # === end desc
 
 
-describe( 'create ...', function () {
-
-  it( 'create a file', function () {
-    var contents = fs.readFileSync("tests/laughing_octopus/migrates/001-one.js").toString();
-    assert.equal(contents.indexOf('var ') > -1, true);
-  });
-
-  it( 'creates file in successive order', function () {
-    var contents = fs.readFileSync("tests/laughing_octopus/migrates/002-two.js").toString();
-    assert.equal(contents.indexOf('var ') > -1, true);
-    var contents = fs.readFileSync("tests/laughing_octopus/migrates/003-three.js").toString();
-    assert.equal(contents.indexOf('var ') > -1, true);
-  });
-
-}); // === end desc
-
-
-
-describe( 'drop_it', function () {
-
-  it( 'migrates down', function () {
-    var contents = fs.readFileSync("/tmp/duck_drop_it").toString();
-    assert.deepEqual(contents, "drop_it");
-  });
-
-  does( 'removes entry from schema', function (done) {
-    applets(function (list) {
-      assert.deepEqual(list.liquid, undefined);
-      done();
-    });
-  });
-
-}); // === end desc
-
-
-describe( 'list', function () {
-
-  it( 'outputs schema table on each line: VER_NUM NAME', function () {
-    var contents = fs.readFileSync("/tmp/duck_list").toString().split("\n");
-    assert.deepEqual(!!contents[0].match(/\d user/), true);
-    assert.deepEqual(!!contents[1].match(/\d raven_sword/), true);
-  });
-}); // === end desc

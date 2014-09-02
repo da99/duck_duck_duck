@@ -16,15 +16,25 @@ class Duck_Duck_Duck
       new(*args).create
     end
 
+    def migrate_schema
+      DB << <<-EOF
+        CREATE TABLE IF NOT EXISTS #{SCHEMA_TABLE} (
+          name      varchar(255) NOT NULL PRIMARY KEY ,
+          version   smallint     NOT NULL DEFAULT 0
+        )
+      EOF
+    end
+
     %w{reset up down}.each { |meth|
-      eval %^
+      eval <<-EOF, nil, __FILE__, __LINE__ + 1
         def #{meth} name = nil
+          migrate_schema
           names = name ? [name] : models
           names.each { |name|
             new(name).#{meth}
           }
         end
-      ^
+      EOF
     }
 
     private # ======================================
@@ -44,6 +54,11 @@ class Duck_Duck_Duck
 
   def initialize *args
     @name, @action, @sub_action = args
+    @files = Dir.glob("#{name}/migrates/*.sql")
+  end
+
+  def file_to_ver str
+    str.split('/').pop.split('-').first.to_i
   end
 
   def reset
@@ -51,23 +66,7 @@ class Duck_Duck_Duck
     up
   end
 
-  def migrate_schema
-    DB << <<-EOF
-      CREATE TABLE IF NOT EXISTS #{SCHEMA_TABLE} (
-        name      varchar(255) NOT NULL PRIMARY KEY ,
-        version   smallint     NOT NULL DEFAULT 0
-      )
-    EOF
-
-    def file_to_ver str
-      str.split('/').pop.split('-').first.to_i
-    end
-
-    @files = Dir.glob("#{name}/migrates/*.sql")
-  end # === def migrate_schema
-
   def up
-    migrate_schema
     rec = DB.fetch("SELECT version FROM #{SCHEMA_TABLE} WHERE name = :name",  :name=>name).all.first
 
     if !rec
@@ -92,7 +91,7 @@ class Duck_Duck_Duck
       ver = pair.first
       sql = pair[1]
       DB << sql
-      DB[" UPDATE #{SCHEMA_TABLE} SET version = ? WHERE name = ? ", ver, name].update
+      DB[" UPDATE #{SCHEMA_TABLE.inspect} SET version = ? WHERE name = ? ", ver, name].update
       puts "#{name} schema is now : #{ver}"
     }
 
@@ -102,7 +101,6 @@ class Duck_Duck_Duck
   end # === def up
 
   def down
-    migrate_schema
     rec = DB.fetch("SELECT version FROM #{SCHEMA_TABLE} WHERE name = :name",  :name=>NAME).all.first
 
     if !rec
