@@ -62,7 +62,7 @@ describe "create" do
 
 end # === describe create
 
-describe 'Migrate up: model' do
+describe 'up model' do
 
   before { reset }
 
@@ -81,9 +81,9 @@ describe 'Migrate up: model' do
       should == ['record 30', 'record 40', 'record 50']
   end
 
-end # === describe Migrate up: model
+end # === describe up model
 
-describe 'Migrate down: model' do
+describe 'down model' do
 
   before { reset }
 
@@ -111,6 +111,38 @@ describe 'Migrate down: model' do
       should == ['DROP record 20', 'DROP 0020_model']
   end
 
-end # === describe Migrate down: model
+end # === describe down model
 
+describe "up" do
+
+  before { reset }
+
+  it "migrates all models" do
+    `duck_duck_duck up`
+    get("SELECT * FROM #{schema.inspect} ORDER BY name").
+      should == [
+        {:name=>'0010_model',:version=>50},
+        {:name=>'0020_model',:version=>30},
+        {:name=>'0030_model',:version=>30}
+    ]
+  end
+
+end # describe up
+
+describe 'down' do
+
+  before { reset }
+
+  it "migrates down all models" do
+    `duck_duck_duck up`
+    `duck_duck_duck down`
+    get("SELECT * FROM #{schema.inspect} ORDER BY name").
+      should == [
+        {:name=>'0010_model',:version=>0},
+        {:name=>'0020_model',:version=>0},
+        {:name=>'0030_model',:version=>0}
+    ]
+  end
+
+end # === describe down
 
