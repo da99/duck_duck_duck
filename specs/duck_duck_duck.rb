@@ -62,7 +62,7 @@ describe "create" do
 
 end # === describe create
 
-describe 'Migrate up:' do
+describe 'Migrate up: model' do
 
   before { reset }
 
@@ -81,9 +81,9 @@ describe 'Migrate up:' do
       should == ['record 30', 'record 40', 'record 50']
   end
 
-end # === end desc
+end # === describe Migrate up: model
 
-describe 'Migrate down:' do
+describe 'Migrate down: model' do
 
   before { reset }
 
@@ -111,6 +111,6 @@ describe 'Migrate down:' do
       should == ['DROP record 20', 'DROP 0020_model']
   end
 
-end # === end desc
+end # === describe Migrate down: model
 
 
