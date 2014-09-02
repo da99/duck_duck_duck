@@ -58,7 +58,7 @@ class Duck_Duck_Duck
   end
 
   def file_to_ver str
-    str.split('/').pop.split('-').first.to_i
+    str.split('/').last[/\d{4}/].to_i
   end
 
   def reset
@@ -101,44 +101,43 @@ class Duck_Duck_Duck
   end # === def up
 
   def down
-    rec = DB.fetch("SELECT version FROM #{SCHEMA_TABLE} WHERE name = :name",  :name=>NAME).all.first
+    rec = DB.fetch("SELECT version FROM #{SCHEMA_TABLE} WHERE name = :name",  :name=>name).all.first
 
     if !rec
-      ds = DB["INSERT INTO #{SCHEMA_TABLE} (name, version) VALUES (?, ?)", NAME, 0]
+      ds = DB["INSERT INTO #{SCHEMA_TABLE} (name, version) VALUES (?, ?)", name, 0]
       ds.insert
       rec = {:version=>0}
     end
 
     if rec[:version] == 0
-      puts "#{NAME} is already the latest: #{rec[:version]}\n"
+      puts "#{name} is already the latest: #{rec[:version]}\n"
       exit 0
     end
 
     if rec[:version] < 0
-      puts "#{NAME} is at invalid version: #{rec[:version]}\n"
+      puts "#{name} is at invalid version: #{rec[:version]}\n"
       exit 1
     end
 
     files = @files.sort.reverse.map { |f|
       ver = file_to_ver(f)
-
-      if ver <= rec[:version]
-        [ ver, File.read(f).split('-- DOWN').last ]
-      end
+      next unless ver <= rec[:version]
+      [ ver, File.read(f).split('-- DOWN').last ]
     }.compact
 
     if files.empty?
-      puts "#{NAME} is already the latest: #{rec[:version]}\n"
+      puts "#{name} is already the latest: #{rec[:version]}\n"
     end
 
     new_ver = nil
 
-    files.each { |pair|
-      ver = pair.first - 1
+    files.each_with_index { |pair, i|
+      prev_pair = files[i+1] || [0, nil]
+      ver = prev_pair.first.to_i
       sql = pair[1]
       DB << sql
-      DB[" UPDATE #{SCHEMA_TABLE} SET version = ? WHERE name = ? ", ver, NAME].update
-      puts "#{NAME} schema is now : #{ver}"
+      DB[" UPDATE #{SCHEMA_TABLE} SET version = ? WHERE name = ? ", ver, name].update
+      puts "#{name} schema is now : #{ver}"
     }
 
   end # === def down

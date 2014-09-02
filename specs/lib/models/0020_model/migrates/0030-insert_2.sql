@@ -1,11 +1,11 @@
 
 INSERT INTO "0020_model" (title)
-VALUES ('record 2: 0020_model');
+VALUES ('record 30');
 
 
 -- DOWN
 
 INSERT INTO "0020_model" (title)
-VALUES ('DROP record 2: 0020_model');
+VALUES ('DROP record 30');
 
 

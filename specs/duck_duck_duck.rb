@@ -85,26 +85,30 @@ end # === end desc
 
 describe 'Migrate down:' do
 
+  before { reset }
+
   it 'leaves version to 0' do
     `duck_duck_duck up 0010_model`
     `duck_duck_duck down 0010_model`
-    get('SELECT * FROM _test_schema WHERE name = "0010_model"', :version).last.
+    get(%^SELECT * FROM #{schema.inspect} WHERE name = '0010_model'^, :version).last.
       should == 0
   end
 
   it 'runs migrates in reverse order' do
     `duck_duck_duck up 0020_model`
     `duck_duck_duck down 0020_model`
-    get('SELECT * FROM 0020_model', :title).
-      should == ['a']
+    get('SELECT * FROM "0020_model"', :title).
+      should == ['record 20', 'record 30', 'DROP record 30', 'DROP record 20', 'DROP 0020_model']
   end
 
   it 'does not run down migrates from later versions' do
     `duck_duck_duck migrate_schema`
-    DB << "UPDATE #{schema} SET version = '3' WHERE name = '0020_model';"
+    DB << File.read("0020_model/migrates/0010-table.sql").split('-- DOWN').first
+    DB << "INSERT INTO #{schema.inspect} VALUES ('0020_model', '20');"
+    DB << "UPDATE #{schema} SET version = '20' WHERE name = '0020_model';"
     `duck_duck_duck down 0020_model`
-    get('SELECT * FROM 0020_model', :title).
-      should == ['a']
+    get('SELECT * FROM "0020_model"', :title).
+      should == ['DROP record 20', 'DROP 0020_model']
   end
 
 end # === end desc
