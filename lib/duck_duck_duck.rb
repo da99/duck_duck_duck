@@ -148,9 +148,9 @@ class Duck_Duck_Duck
     files = Dir.glob("#{name}/migrates/*.sql").grep(/\/\d{4}\-/).sort
 
     next_ver = begin
-                 (files.last || '')[/\/(\d{4})[^\/]+$/]
+                 (files.last || '')[/\/(\d{4})[^\/]+\z/]
                  v = ($1 ? $1 : '0')
-                 '%04d' % (v.to_i + (10 - v[/\d$/].to_i))
+                 '%04d' % (v.to_i + (10 - v[/\d\z/].to_i))
                end
 
     new_file = "#{name}/migrates/#{next_ver}-#{[action, sub_action].compact.join('-')}.sql"

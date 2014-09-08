@@ -29,7 +29,7 @@ end
 
 def versions mod
   Dir.glob("#{mod}/migrates/*").map { |file|
-    file[/\/(\d{4})[^\/]+\.sql$/] && $1.to_i
+    file[/\/(\d{4})[^\/]+\.sql\z/] && $1.to_i
   }.sort
 end
 
