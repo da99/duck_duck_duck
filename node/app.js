@@ -37,7 +37,7 @@ if (argv._[0] === 'list') {
       var v = o.version;
       if (o.version < 10)
         v = ' ' + v;
-      console.log(v, o.name);
+      console['log'](v, o.name);
     });
     j.finish(list);
   })
