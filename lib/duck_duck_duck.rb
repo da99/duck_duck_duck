@@ -54,11 +54,14 @@ class Duck_Duck_Duck
 
   def initialize *args
     @name, @action, @sub_action = args
+    if !@name
+      fail ArguementError, "Name required."
+    end
     @files = Dir.glob("#{name}/migrates/*.sql")
   end
 
   def file_to_ver str
-    str.split('/').last[/\d{4}/].to_i
+    File.basename(str)[/\A\d{1,}/].to_i
   end
 
   def reset
