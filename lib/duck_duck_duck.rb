@@ -29,21 +29,11 @@ class Duck_Duck_Duck
       eval <<-EOF, nil, __FILE__, __LINE__ + 1
         def #{meth} name = nil
           migrate_schema
-          names = name ? [name] : models
-          names.each { |name|
-            puts "=== #{meth}: \#{name}"
-            new(name).#{meth}
-          }
+          puts "=== #{meth}: \#{name}"
+          new(name).#{meth}
         end
       EOF
     }
-
-    private # ======================================
-
-    def models
-      @models ||= Dir.glob("*/migrates").
-        map { |dir| File.basename File.dirname(dir) }
-    end
 
   end # === class self ===
 

@@ -125,36 +125,5 @@ describe 'down model' do
 
 end # === describe down model
 
-describe "up" do
 
-  before { reset }
-
-  it "migrates all models" do
-    Exit_0("duck_duck_duck up")
-    get("SELECT * FROM #{schema.inspect} ORDER BY name").
-      should == [
-        {:name=>'0010_model',:version=>50},
-        {:name=>'0020_model',:version=>30},
-        {:name=>'0030_model',:version=>30}
-    ]
-  end
-
-end # describe up
-
-describe 'down' do
-
-  before { reset }
-
-  it "migrates down all models" do
-    Exit_0("duck_duck_duck up")
-    Exit_0("duck_duck_duck down")
-    get("SELECT * FROM #{schema.inspect} ORDER BY name").
-      should == [
-        {:name=>'0010_model',:version=>0},
-        {:name=>'0020_model',:version=>0},
-        {:name=>'0030_model',:version=>0}
-    ]
-  end
-
-end # === describe down
 
