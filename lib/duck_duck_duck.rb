@@ -31,6 +31,7 @@ class Duck_Duck_Duck
           migrate_schema
           names = name ? [name] : models
           names.each { |name|
+            puts "=== #{meth}: \#{name}"
             new(name).#{meth}
           }
         end
@@ -55,7 +56,7 @@ class Duck_Duck_Duck
   def initialize *args
     @name, @action, @sub_action = args
     if !@name
-      fail ArguementError, "Name required."
+      fail ArgumentError, "Name required."
     end
     @files = Dir.glob("#{name}/migrates/*.sql")
   end

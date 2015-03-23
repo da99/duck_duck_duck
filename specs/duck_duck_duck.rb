@@ -35,6 +35,16 @@ end
 
 # === Specs ==================================================================
 
+describe :initialize do
+
+  it "fails if no name is given" do
+    should.raise(ArgumentError) {
+      Duck_Duck_Duck.new
+    }.message.should.match /Name required/
+  end # === it fails if no name is given
+
+end # === describe :initialize
+
 describe "create" do
 
   before {
