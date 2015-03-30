@@ -139,12 +139,18 @@ class Duck_Duck_Duck
   def create
     `mkdir -p #{name}/migrates`
 
-    files = Dir.glob("#{name}/migrates/*.sql").grep(/\/\d{4}\-/).sort
+    files = Dir.glob("#{name}/migrates/*.sql").grep(/\/\d+\-/).sort
 
+    size = 3
     next_ver = begin
-                 (files.last || '')[/\/(\d{4})[^\/]+\z/]
-                 v = ($1 ? $1 : '0')
-                 '%04d' % (v.to_i + (10 - v[/\d\z/].to_i))
+                 (files.last || '')[/\/(\d+)[^\/]+\z/]
+                 v = if $1
+                       size = $1.size
+                       $1 
+                      else
+                        '0'
+                      end
+                 "%0#{size}d" % (v.to_i + 1)
                end
 
     new_file = "#{name}/migrates/#{next_ver}-#{[action, sub_action].compact.join('-')}.sql"

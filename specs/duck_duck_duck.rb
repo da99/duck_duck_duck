@@ -54,21 +54,21 @@ describe "create" do
     @dir = tmp_dir
   }
 
-  it "names the file in successive file versions: 0000-....sql" do
+  it "names the file in successive file versions: 000-....sql" do
     Dir.chdir(@dir) {
       Exit_0("duck_duck_duck create MOD table_1")
       Exit_0("duck_duck_duck create MOD table_2")
 
-      Exit_0("touch MOD/migrates/0022-skip_zero.sql")
+      Exit_0("touch MOD/migrates/005-skip_zero.sql")
       Exit_0("duck_duck_duck create MOD table_3")
 
-      Exit_0("touch MOD/migrates/0091-skip_zero.sql")
+      Exit_0("touch MOD/migrates/009-skip_zero.sql")
       Exit_0("duck_duck_duck create MOD table_100")
 
-      File.should.exists('MOD/migrates/0010-table_1.sql')
-      File.should.exists('MOD/migrates/0020-table_2.sql')
-      File.should.exists('MOD/migrates/0030-table_3.sql')
-      File.should.exists('MOD/migrates/0100-table_100.sql')
+      File.should.exists('MOD/migrates/001-table_1.sql')
+      File.should.exists('MOD/migrates/002-table_2.sql')
+      File.should.exists('MOD/migrates/006-table_3.sql')
+      File.should.exists('MOD/migrates/010-table_100.sql')
     }
   end
 
