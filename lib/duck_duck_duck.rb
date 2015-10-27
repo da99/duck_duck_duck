@@ -25,6 +25,27 @@ class Duck_Duck_Duck
       EOF
     end
 
+    def read_file f
+      raw = File.read(f).split(/\s*--\s+(UP|DOWN)\s*/).
+      inject([:UP, { :UP => [], :DOWN => [] }]) do |memo, val|
+        dir  = memo.first
+        meta = memo.last
+
+        case val
+        when 'UP', :UP, :DOWN, 'DOWN'
+          dir = val.to_sym
+        when ''
+          # do nothing
+        else
+          meta[dir] << val
+        end
+
+        [dir, meta]
+      end
+      meta = raw.last
+      {:UP=>meta[:UP].join("\n"), :DOWN=>meta[:DOWN].join("\n")}
+    end
+
     %w{reset up down}.each { |meth|
       eval <<-EOF, nil, __FILE__, __LINE__ + 1
         def #{meth} name = nil
@@ -77,7 +98,7 @@ class Duck_Duck_Duck
     files = @files.sort.map { |f|
       ver = file_to_ver(f)
       if ver > rec[:version]
-        [ ver, File.read(f).split('-- DOWN').first ]
+        [ ver, Duck_Duck_Duck.read_file(f)[:UP] ]
       end
     }.compact
 
@@ -116,7 +137,7 @@ class Duck_Duck_Duck
     files = @files.sort.reverse.map { |f|
       ver = file_to_ver(f)
       next unless ver <= rec[:version]
-      [ ver, File.read(f).split('-- DOWN').last ]
+      [ ver, Duck_Duck_Duck.read_file(f)[:DOWN] ]
     }.compact
 
     if files.empty?

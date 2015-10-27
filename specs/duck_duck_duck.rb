@@ -3,7 +3,7 @@ require 'sequel'
 require 'Exit_0'
 
 schema = ENV['SCHEMA_TABLE'] = '_test_schema'
-DB = Sequel.connect ENV['DATABASE_URL']
+DB     = Sequel.connect ENV['DATABASE_URL']
 MODELS = Dir.glob('*/migrates').map { |dir|  File.basename File.dirname(dir) }
 
 # === Reset tables ===========================================================
@@ -44,6 +44,17 @@ describe :initialize do
   end # === it fails if no name is given
 
 end # === describe :initialize
+
+describe "read_file" do
+
+  it "returns: {:UP=>STRING, :DOWN=>STRING}" do
+    file = "/tmp/ddd_up_down.sql"
+    File.write(file, ["-- DOWN", "2", "-- UP", "1", "-- DOWN", "2", "-- UP", "1"].join("\n"))
+    Duck_Duck_Duck.read_file(file).
+      should == {:UP=>"1\n1", :DOWN=>"2\n2"}
+  end # === it
+
+end # === describe "read_file"
 
 describe "create" do
 
@@ -125,5 +136,20 @@ describe 'down model' do
 
 end # === describe down model
 
+describe '-- UP/-- DOWN model' do
+
+  before { reset }
+
+  it "runs UPs in proper order" do
+    Exit_0("duck_duck_duck up 0030_model")
+    get(%^SELECT title FROM "0030_model"^).
+      should == [
+        {:title=>"record 1-1: 0030_model"},
+        {:title=>"record 2-1: 0030_model"},
+        {:title=>"record 2-2: 0030_model"},
+    ]
+  end # === it
+
+end # === describe '-- UP/-- DOWN model'
 
 
