@@ -26,7 +26,7 @@ class Duck_Duck_Duck
     end
 
     def read_file f
-      raw = File.read(f).split(/\s*--\s+(UP|DOWN)\s*/).
+      raw = File.read(f).split(/\s*--\s+(UP|DOWN):?\s*/).
       inject([:UP, { :UP => [], :DOWN => [] }]) do |memo, val|
         dir  = memo.first
         meta = memo.last

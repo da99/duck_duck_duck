@@ -54,6 +54,20 @@ describe "read_file" do
       should == {:UP=>"1\n1", :DOWN=>"2\n2"}
   end # === it
 
+  it "ignores colons: UP, UP:, DOWN, DOWN:" do
+    file = "/tmp/ddd_up_down.sql"
+    File.write(file, ["-- DOWN:", "2", "-- UP:", "1", "-- DOWN:", "2", "-- UP:", "1"].join("\n"))
+    Duck_Duck_Duck.read_file(file).
+      should == {:UP=>"1\n1", :DOWN=>"2\n2"}
+  end # === it
+
+  it "ignores trailing whitespace: -- UP   \n" do
+    file = "/tmp/ddd_up_down.sql"
+    File.write(file, ["-- DOWN:   ", "2", "-- UP   ", "1", "-- DOWN   ", "2", "-- UP:   ", "1"].join("\n"))
+    Duck_Duck_Duck.read_file(file).
+      should == {:UP=>"1\n1", :DOWN=>"2\n2"}
+  end # === it
+
 end # === describe "read_file"
 
 describe "create" do
