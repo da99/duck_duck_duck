@@ -112,7 +112,7 @@ describe 'up model' do
   it 'does not run migrations from previous versions' do
     Exit_0("duck_duck_duck migrate_schema")
     DB << File.read("0010_model/migrates/0010-table.sql").split('-- DOWN').first
-    DB << "INSERT INTO #{schema.inspect} VALUES ('0010_MODEL', '0010_model', '20');"
+    DB << "INSERT INTO #{schema.inspect} VALUES ('0010_model', '0010_MODEL', '20');"
     Exit_0("duck_duck_duck up 0010_model")
     get('SELECT * FROM "0010_model"', :title).
       should == ['record 30', 'record 40', 'record 50']
@@ -127,7 +127,7 @@ describe 'down model' do
   it 'leaves version to 0' do
     Exit_0("duck_duck_duck up 0010_model")
     Exit_0("duck_duck_duck down 0010_model")
-    get(%^SELECT * FROM #{schema.inspect} WHERE display_name = '0010_model'^, :version).last.
+    get(%^SELECT * FROM #{schema.inspect} WHERE name = '0010_model'^, :version).last.
       should == 0
   end
 
@@ -141,10 +141,10 @@ describe 'down model' do
   it 'does not run down migrates from later versions' do
     Exit_0("duck_duck_duck migrate_schema")
     DB << File.read("0020_model/migrates/0010-table.sql").split('-- DOWN').first
-    DB << "INSERT INTO #{schema.inspect} VALUES ('0020_MODEL', '0020_model', '20');"
+    DB << "INSERT INTO #{schema.inspect} VALUES ('0020_model', '0020_MODEL', '20');"
     DB << "UPDATE #{schema} SET version = '20' WHERE name = '0020_model';"
     Exit_0("duck_duck_duck down 0020_model")
-    get('SELECT * FROM "0020_model"', :title).
+    get('SELECT title FROM "0020_model"', :title).
       should == ['DROP record 20', 'DROP 0020_model']
   end
 
