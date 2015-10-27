@@ -8,6 +8,10 @@ class Duck_Duck_Duck
 
   class << self
 
+    def canonical_name name
+      name.upcase
+    end # === def canonical_name
+
     def dev_only
       fail "Not allowed on a dev machine." if ENV['IS_DEV']
     end
@@ -19,8 +23,9 @@ class Duck_Duck_Duck
     def migrate_schema
       DB << <<-EOF
         CREATE TABLE IF NOT EXISTS #{SCHEMA_TABLE} (
-          name      varchar(255) NOT NULL PRIMARY KEY ,
-          version   smallint     NOT NULL DEFAULT 0
+          name              varchar(255) NOT NULL PRIMARY KEY,
+          display_name      varchar(255) NOT NULL UNIQUE,
+          version           smallint     NOT NULL DEFAULT 0
         )
       EOF
     end
@@ -62,14 +67,16 @@ class Duck_Duck_Duck
   # Instance methods:
   # ===============================================
 
-  attr_reader :name, :action, :sub_action
+  attr_reader :name, :display_name, :action, :sub_action
 
   def initialize *args
-    @name, @action, @sub_action = args
-    if !@name
+    @display_name, @action, @sub_action = args
+    if !@display_name
       fail ArgumentError, "Name required."
     end
-    @files = Dir.glob("#{name}/migrates/*.sql")
+
+    @name = Duck_Duck_Duck.canonical_name(display_name)
+    @files = Dir.glob("#{display_name}/migrates/*.sql")
   end
 
   def file_to_ver str
@@ -85,13 +92,13 @@ class Duck_Duck_Duck
     rec = DB.fetch("SELECT version FROM #{SCHEMA_TABLE} WHERE name = :name",  :name=>name).all.first
 
     if !rec
-      ds = DB["INSERT INTO #{SCHEMA_TABLE} (name, version) VALUES (?, ?)", name, 0]
+      ds = DB["INSERT INTO #{SCHEMA_TABLE} (name, display_name, version) VALUES (?, ?, ?)", name, display_name, 0]
       ds.insert
       rec = {:version=>0}
     end
 
     if rec[:version] < 0
-      puts "#{name} has an invalid version: #{rec[:version]}\n"
+      puts "#{display_name} has an invalid version: #{rec[:version]}\n"
       exit 1
     end
 
@@ -107,11 +114,11 @@ class Duck_Duck_Duck
       sql = pair[1]
       DB << sql
       DB[" UPDATE #{SCHEMA_TABLE.inspect} SET version = ? WHERE name = ? ", ver, name].update
-      puts "#{name} schema is now : #{ver}"
+      puts "#{display_name} schema is now : #{ver}"
     }
 
     if files.empty?
-      puts "#{name} is already the latest: #{rec[:version]}"
+      puts "#{display_name} is already the latest: #{rec[:version]}"
     end
   end # === def up
 
@@ -119,18 +126,18 @@ class Duck_Duck_Duck
     rec = DB.fetch("SELECT version FROM #{SCHEMA_TABLE} WHERE name = :name",  :name=>name).all.first
 
     if !rec
-      ds = DB["INSERT INTO #{SCHEMA_TABLE} (name, version) VALUES (?, ?)", name, 0]
+      ds = DB["INSERT INTO #{SCHEMA_TABLE} (name, display_name, version) VALUES (?, ?, ?)", name, display_name, 0]
       ds.insert
       rec = {:version=>0}
     end
 
     if rec[:version] == 0
-      puts "#{name} is already the latest: #{rec[:version]}\n"
+      puts "#{display_name} is already the latest: #{rec[:version]}\n"
       exit 0
     end
 
     if rec[:version] < 0
-      puts "#{name} is at invalid version: #{rec[:version]}\n"
+      puts "#{display_name} is at invalid version: #{rec[:version]}\n"
       exit 1
     end
 
@@ -141,7 +148,7 @@ class Duck_Duck_Duck
     }.compact
 
     if files.empty?
-      puts "#{name} is already the latest: #{rec[:version]}\n"
+      puts "#{display_name} is already the latest: #{rec[:version]}\n"
     end
 
     new_ver = nil
@@ -152,15 +159,15 @@ class Duck_Duck_Duck
       sql = pair[1]
       DB << sql
       DB[" UPDATE #{SCHEMA_TABLE} SET version = ? WHERE name = ? ", ver, name].update
-      puts "#{name} schema is now : #{ver}"
+      puts "#{display_name} schema is now : #{ver}"
     }
 
   end # === def down
 
   def create
-    `mkdir -p #{name}/migrates`
+    `mkdir -p #{display_name}/migrates`
 
-    files = Dir.glob("#{name}/migrates/*.sql").grep(/\/\d+\-/).sort
+    files = Dir.glob("#{display_name}/migrates/*.sql").grep(/\/\d+\-/).sort
 
     size = 3
     next_ver = begin
@@ -174,7 +181,7 @@ class Duck_Duck_Duck
                  "%0#{size}d" % (v.to_i + 1)
                end
 
-    new_file = "#{name}/migrates/#{next_ver}-#{[action, sub_action].compact.join('-')}.sql"
+    new_file = "#{display_name}/migrates/#{next_ver}-#{[action, sub_action].compact.join('-')}.sql"
     File.open(new_file, 'a') do |f|
       f.puts "\n\n\n\n-- DOWN\n\n\n\n"
     end
