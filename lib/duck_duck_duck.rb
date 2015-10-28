@@ -8,10 +8,6 @@ class Duck_Duck_Duck
 
   class << self
 
-    def canonical_name name
-      name.upcase
-    end
-
     def dev_only
       fail "Not allowed on a dev machine." if ENV['IS_DEV']
     end
@@ -24,7 +20,6 @@ class Duck_Duck_Duck
       DB << <<-EOF
         CREATE TABLE IF NOT EXISTS #{SCHEMA_TABLE} (
           name              varchar(255) NOT NULL PRIMARY KEY,
-          canonical         varchar(255) NOT NULL UNIQUE,
           version           smallint     NOT NULL DEFAULT 0
         )
       EOF
@@ -67,7 +62,7 @@ class Duck_Duck_Duck
   # Instance methods:
   # ===============================================
 
-  attr_reader :name, :canonical, :action, :sub_action
+  attr_reader :name, :action, :sub_action
 
   def initialize *args
     @name, @action, @sub_action = args
@@ -75,8 +70,11 @@ class Duck_Duck_Duck
       fail ArgumentError, "Name required."
     end
 
-    @canonical = Duck_Duck_Duck.canonical_name(name)
-    @files = Dir.glob("#{name}/migrates/*.sql")
+    @files = `find . -iregex ".+/#{name}/migrates/.+\.sql"`
+    .strip
+    .split("\n")
+    .grep(/\/\d+\-/)
+    .sort
   end
 
   def file_to_ver str
@@ -88,17 +86,24 @@ class Duck_Duck_Duck
     up
   end
 
-  def up
+  def init_model_in_schema
     rec = DB.fetch(
-      "SELECT version FROM #{SCHEMA_TABLE} WHERE canonical = :canonical",
-      :canonical=>canonical
+      "SELECT version FROM #{SCHEMA_TABLE} WHERE name = upper( :name )",
+      :name=>name
     ).all.first
 
     if !rec
-      ds = DB["INSERT INTO #{SCHEMA_TABLE} (name, canonical, version) VALUES (?, ?, ?)", name, canonical, 0]
-      ds.insert
-      rec = {:version=>0}
+      rec = DB.fetch(
+        "INSERT INTO #{SCHEMA_TABLE} (name, version) VALUES (upper(:name), :version) RETURNING *",
+        :name=>name, :version=>0
+      ).all.first
     end
+
+    {:version=>rec[:version]}
+  end
+
+  def up
+    rec = init_model_in_schema
 
     if rec[:version] < 0
       puts "#{name} has an invalid version: #{rec[:version]}\n"
@@ -116,7 +121,7 @@ class Duck_Duck_Duck
       ver = pair.first
       sql = pair[1]
       DB << sql
-      DB[" UPDATE #{SCHEMA_TABLE.inspect} SET version = ? WHERE name = ? ", ver, name].update
+      DB[" UPDATE #{SCHEMA_TABLE.inspect} SET version = ? WHERE name = upper( ? ); ", ver, name].update
       puts "#{name} schema is now : #{ver}"
     }
 
@@ -126,20 +131,7 @@ class Duck_Duck_Duck
   end # === def up
 
   def down
-    rec = DB.fetch(
-      %^
-        SELECT version
-        FROM #{SCHEMA_TABLE}
-        WHERE canonical = :canonical
-      ^,
-      :canonical=>canonical
-    ).all.first
-
-    if !rec
-      ds = DB["INSERT INTO #{SCHEMA_TABLE} (name, canonical, version) VALUES (?, ?, ?)", name, canonical, 0]
-      ds.insert
-      rec = {:version=>0}
-    end
+    rec = init_model_in_schema
 
     if rec[:version] == 0
       puts "#{name} is already the latest: #{rec[:version]}\n"
@@ -168,7 +160,7 @@ class Duck_Duck_Duck
       ver = prev_pair.first.to_i
       sql = pair[1]
       DB << sql
-      DB[" UPDATE #{SCHEMA_TABLE} SET version = ? WHERE name = ? ", ver, name].update
+      DB[" UPDATE #{SCHEMA_TABLE} SET version = ? WHERE name = upper( ? )", ver, name].update
       puts "#{name} schema is now : #{ver}"
     }
 
@@ -177,14 +169,12 @@ class Duck_Duck_Duck
   def create
     `mkdir -p #{name}/migrates`
 
-    files = Dir.glob("#{name}/migrates/*.sql").grep(/\/\d+\-/).sort
-
     size = 3
     next_ver = begin
-                 (files.last || '')[/\/(\d+)[^\/]+\z/]
+                 (@files.last || '')[/\/(\d+)[^\/]+\z/]
                  v = if $1
                        size = $1.size
-                       $1 
+                       $1
                       else
                         '0'
                       end
