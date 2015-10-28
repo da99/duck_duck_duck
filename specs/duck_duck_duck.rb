@@ -124,6 +124,13 @@ describe 'up model' do
       first[:version].should == versions('0010_model').last
   end # === it
 
+  it "fails if folder of model does not exist" do
+    name = "folder_123"
+    should.raise {
+      Exit_0("duck_duck_duck up #{name}")
+    }.message.should =~ /#{name}\/migrates does not exist/i
+  end # === it
+
 end # === describe up model
 
 describe 'down model' do
@@ -160,6 +167,13 @@ describe 'down model' do
     get(%^SELECT * FROM #{schema.inspect} WHERE name = upper('0010_model');^, :version).last.
       should == 0
   end
+
+  it "fails if folder of model does not exist" do
+    name = "folder_321"
+    should.raise {
+      Exit_0("duck_duck_duck down #{name}")
+    }.message.should =~ /#{name}\/migrates does not exist/i
+  end # === it
 
 end # === describe down model
 

@@ -93,6 +93,11 @@ class Duck_Duck_Duck
     ).all.first
 
     if !rec
+      dir_name = "#{name}/migrates"
+      dir = `find . -iregex ".+/#{dir_name}"`.strip.split("\n")
+      if dir.empty?
+        fail "Directory #{dir_name} does not exist."
+      end
       rec = DB.fetch(
         "INSERT INTO #{SCHEMA_TABLE} (name, version) VALUES (upper(:name), :version) RETURNING *",
         :name=>name, :version=>0
