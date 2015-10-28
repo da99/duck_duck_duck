@@ -118,6 +118,12 @@ describe 'up model' do
       should == ['record 30', 'record 40', 'record 50']
   end
 
+  it "ignores case of model" do
+    Exit_0("duck_duck_duck up 0010_mOdEl")
+    get('SELECT * FROM _test_schema').
+      first[:version].should == versions('0010_model').last
+  end # === it
+
 end # === describe up model
 
 describe 'down model' do
@@ -146,6 +152,13 @@ describe 'down model' do
     Exit_0("duck_duck_duck down 0020_model")
     get('SELECT title FROM "0020_model"', :title).
       should == ['DROP record 20', 'DROP 0020_model']
+  end
+
+  it 'ignores case of model' do
+    Exit_0("duck_duck_duck up 0010_model")
+    Exit_0("duck_duck_duck down 0010_MoDeL")
+    get(%^SELECT * FROM #{schema.inspect} WHERE name = upper('0010_model');^, :version).last.
+      should == 0
   end
 
 end # === describe down model
