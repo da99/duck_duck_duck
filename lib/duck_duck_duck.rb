@@ -8,6 +8,10 @@ class Duck_Duck_Duck
 
   class << self
 
+    def stdout *args
+      args.each { |a| print "#{a}\n" }
+    end
+
     def dev_only
       fail "Not allowed on a dev machine." if ENV['IS_DEV']
     end
@@ -50,7 +54,7 @@ class Duck_Duck_Duck
       eval <<-EOF, nil, __FILE__, __LINE__ + 1
         def #{meth} name = nil
           migrate_schema
-          puts "=== #{meth}: \#{name}"
+          stdout "=== #{meth}: \#{name}"
           new(name).#{meth}
         end
       EOF
@@ -75,6 +79,10 @@ class Duck_Duck_Duck
     .split("\n")
     .grep(/\/\d+\-/)
     .sort
+  end
+
+  def stdout *args
+    Duck_Duck_Duck.stdout *args
   end
 
   def file_to_ver str
@@ -111,7 +119,7 @@ class Duck_Duck_Duck
     rec = init_model_in_schema
 
     if rec[:version] < 0
-      puts "#{name} has an invalid version: #{rec[:version]}\n"
+      stdout "#{name} has an invalid version: #{rec[:version]}\n"
       exit 1
     end
 
@@ -127,11 +135,11 @@ class Duck_Duck_Duck
       sql = pair[1]
       DB << sql
       DB[" UPDATE #{SCHEMA_TABLE.inspect} SET version = ? WHERE name = upper( ? ); ", ver, name].update
-      puts "#{name} schema is now : #{ver}"
+      stdout "#{name} schema is now : #{ver}"
     }
 
     if files.empty?
-      puts "#{name} is already the latest: #{rec[:version]}"
+      stdout "#{name} is already the latest: #{rec[:version]}"
     end
   end # === def up
 
@@ -139,12 +147,12 @@ class Duck_Duck_Duck
     rec = init_model_in_schema
 
     if rec[:version] == 0
-      puts "#{name} is already the latest: #{rec[:version]}\n"
+      stdout "#{name} is already the latest: #{rec[:version]}\n"
       exit 0
     end
 
     if rec[:version] < 0
-      puts "#{name} is at invalid version: #{rec[:version]}\n"
+      stdout "#{name} is at invalid version: #{rec[:version]}\n"
       exit 1
     end
 
@@ -155,7 +163,7 @@ class Duck_Duck_Duck
     }.compact
 
     if files.empty?
-      puts "#{name} is already the latest: #{rec[:version]}\n"
+      stdout "#{name} is already the latest: #{rec[:version]}\n"
     end
 
     new_ver = nil
@@ -166,7 +174,7 @@ class Duck_Duck_Duck
       sql = pair[1]
       DB << sql
       DB[" UPDATE #{SCHEMA_TABLE} SET version = ? WHERE name = upper( ? )", ver, name].update
-      puts "#{name} schema is now : #{ver}"
+      stdout "#{name} schema is now : #{ver}"
     }
 
   end # === def down
@@ -188,10 +196,10 @@ class Duck_Duck_Duck
 
     new_file = "#{name}/migrates/#{next_ver}-#{[action, sub_action].compact.join('-')}.sql"
     File.open(new_file, 'a') do |f|
-      f.puts "\n\n\n\n-- DOWN\n\n\n\n"
+      f.print "\n\n\n\n-- DOWN\n\n\n\n"
     end
 
-    puts new_file
+    stdout new_file
   end # === def create
 
 
