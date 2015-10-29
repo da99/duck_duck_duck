@@ -74,11 +74,18 @@ class Duck_Duck_Duck
       fail ArgumentError, "Name required."
     end
 
-    @files = `find . -iregex ".+/#{name}/migrates/.+\.sql"`
+    @__files = `find . -iregex ".+/#{name}/migrates/__.+\.sql"`
     .strip
     .split("\n")
-    .grep(/\/\d+\-/)
     .sort
+
+    @files = (
+      `find . -iregex ".+/#{name}/migrates/.+\.sql"`
+      .strip
+      .split("\n")
+      .grep(/\/\d+\-/)
+      .sort
+    )
   end
 
   def stdout *args
@@ -130,6 +137,15 @@ class Duck_Duck_Duck
       end
     }.compact
 
+    if @__files.empty? && files.empty?
+      stdout "#{name} is already the latest: #{rec[:version]}"
+    end
+
+    @__files.each { |f|
+      DB << Duck_Duck_Duck.read_file(f)[:UP]
+      stdout "ran file: #{f}"
+    }
+
     files.each { |pair|
       ver = pair.first
       sql = pair[1]
@@ -138,32 +154,29 @@ class Duck_Duck_Duck
       stdout "#{name} schema is now : #{ver}"
     }
 
-    if files.empty?
-      stdout "#{name} is already the latest: #{rec[:version]}"
-    end
   end # === def up
 
   def down
     rec = init_model_in_schema
-
-    if rec[:version] == 0
-      stdout "#{name} is already the latest: #{rec[:version]}\n"
-      exit 0
-    end
 
     if rec[:version] < 0
       stdout "#{name} is at invalid version: #{rec[:version]}\n"
       exit 1
     end
 
-    files = @files.sort.reverse.map { |f|
-      ver = file_to_ver(f)
-      next unless ver <= rec[:version]
-      [ ver, Duck_Duck_Duck.read_file(f)[:DOWN] ]
-    }.compact
+    files = if rec[:version] == 0
+              []
+            else
+              @files.sort.reverse.map { |f|
+                ver = file_to_ver(f)
+                next unless ver <= rec[:version]
+                [ ver, Duck_Duck_Duck.read_file(f)[:DOWN] ]
+              }.compact
+            end
 
-    if files.empty?
+    if @__files.empty? && files.empty?
       stdout "#{name} is already the latest: #{rec[:version]}\n"
+      exit 0
     end
 
     new_ver = nil
@@ -175,6 +188,11 @@ class Duck_Duck_Duck
       DB << sql
       DB[" UPDATE #{SCHEMA_TABLE} SET version = ? WHERE name = upper( ? )", ver, name].update
       stdout "#{name} schema is now : #{ver}"
+    }
+
+    @__files.reverse.each { |f|
+      DB << Duck_Duck_Duck.read_file(f)[:DOWN]
+      stdout "down: #{f}"
     }
 
   end # === def down

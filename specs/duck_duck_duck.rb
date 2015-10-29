@@ -193,4 +193,36 @@ describe '-- UP/-- DOWN model' do
 
 end # === describe '-- UP/-- DOWN model'
 
+describe '__-...sql files' do
+
+  before { reset }
+
+  it "runs file on each migrate up" do
+    Exit_0("duck_duck_duck up 0040_model")
+    Exit_0("duck_duck_duck up 0040_model")
+    Exit_0("duck_duck_duck up 0040_model")
+    get(%^SELECT title FROM "0040_model"^).
+      should == [
+        {:title=>"__ up"},
+        {:title=>"CREATE 0040_model"},
+        {:title=>"__ up"},
+        {:title=>"__ up"}
+    ]
+  end # === it
+
+  it "runs file on each migrate down" do
+    Exit_0("duck_duck_duck up   0040_model")
+    Exit_0("duck_duck_duck down 0040_model")
+    Exit_0("duck_duck_duck down 0040_model")
+    get(%^SELECT title FROM "0040_model"^).
+      should == [
+        {:title=>"__ up"},
+        {:title=>"CREATE 0040_model"},
+        {:title=>"DROP 0040_model"},
+        {:title=>"__ down"},
+        {:title=>"__ down"}
+    ]
+  end # === it
+
+end # === describe '__-...sql files'
 
