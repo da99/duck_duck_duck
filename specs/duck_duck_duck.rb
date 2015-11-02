@@ -187,11 +187,13 @@ describe '-- UP/-- DOWN model' do
       should == [
         {:title=>"record 1-1: 0030_model"},
         {:title=>"record 2-1: 0030_model"},
-        {:title=>"record 2-2: 0030_model"},
-    ]
+        {:title=>"record 2-2: 0030_model"}
+      ]
   end # === it
 
 end # === describe '-- UP/-- DOWN model'
+
+
 
 describe '__-...sql files' do
 
@@ -225,4 +227,27 @@ describe '__-...sql files' do
   end # === it
 
 end # === describe '__-...sql files'
+
+
+describe '-- BOTH' do
+
+  before { reset }
+
+  it "runs -- BOTH each time" do
+    Exit_0("duck_duck_duck up   0050_model")
+    Exit_0("duck_duck_duck down 0050_model")
+    get(%^SELECT title FROM "0050_model"^).
+      should == [
+        {:title=>"__ both 1"},
+        {:title=>"__ up 1"},
+        {:title=>"__ both 2"},
+        {:title=>"CREATE 0050_model"},
+        {:title=>"DROP 0050_model"},
+        {:title=>"__ both 1"},
+        {:title=>"__ down 1"},
+        {:title=>"__ both 2"}
+    ]
+  end # === it
+
+end # === describe '-- BOTH'
 

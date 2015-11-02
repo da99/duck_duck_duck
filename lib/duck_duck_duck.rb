@@ -30,25 +30,32 @@ class Duck_Duck_Duck
     end
 
     def read_file f
-      raw = File.read(f).split(/\s*--\s+(UP|DOWN):?\s*/).
-      inject([:UP, { :UP => [], :DOWN => [] }]) do |memo, val|
-        dir  = memo.first
-        meta = memo.last
+      raw = File.read(f).split(/\s*--\s+(UP|BOTH|DOWN):?\s*/).
+      inject([:UP, {:UP=>[], :DOWN=>[]}]) do |memo, val|
+        dir   = memo.first
+        meta  = memo.last
 
         case val
-        when 'UP', :UP, :DOWN, 'DOWN'
+        when 'UP', :UP, :DOWN, 'DOWN', 'BOTH', :BOTH
           dir = val.to_sym
         when ''
           # do nothing
         else
-          meta[dir] << val
+          case dir
+          when :BOTH
+            meta[:UP] << val
+            meta[:DOWN] << val
+          else
+            meta[dir] << val
+          end
         end
 
         [dir, meta]
       end
+
       meta = raw.last
       {:UP=>meta[:UP].join("\n"), :DOWN=>meta[:DOWN].join("\n")}
-    end
+    end # === def read_file
 
     %w{reset up down}.each { |meth|
       eval <<-EOF, nil, __FILE__, __LINE__ + 1
